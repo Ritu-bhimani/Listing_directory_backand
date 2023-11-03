@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>confirm email Directory&Listing</title>
+    <style>
+      p {
+        color: black;
+        text-decoration: none;
+        font-size: 12px;
+        margin: 2px;
+      }
+      .link-url {
+        text-decoration: none;
+        color: rgb(9, 124, 255);
+        margin: 20px opx;
+        font-weight: 500;
+        font-size: 17px;
+        text-align: center;
+      }
+
+      .link-url-futoor{
+        text-decoration: none;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="text-align: center;">
+      <img
+        src="https://prolinkinfotech.com/wp-content/uploads/2023/04/cropped-PNG-01.png"
+        alt="directory&listing logo"
+        style="margin: 50px 0px;width: 250px;"
+      />
+    </div>
+    <p>Dear customer,</p>
+
+    <p>
+      We are happy you signed up to Directory & Listing using email address <%= email %>.
+    </p> 
+    <p>
+      Please complete your registration by clicking on the
+      following link. Note this link will expire in 10 min. <a href="<%= verificationUrl %>" role="button"> Verify Email</a>
+    </p>
+    <p>By requesting that you click on the link, we ensure that you have registered personally and that your email address has not been misused.
+      Once you have clicked on the link, the user registration process will start. If you're not the intended user, contact directorylisting@gmail.com.</p>
+    <h6 style="margin: 50px 0px; font-size: 15px; font-weight: 500 ;color: black;">
+      Your Directory and Listing Team
+    </h6>
+
+    <div style="text-align: center; border-bottom: 1px solid lightgray; border-top:1px solid lightgray;">
+      <div style="padding: 25px 0px;">
+      <a href="#" class="link-url-futoor" style="color: black">Legal notice</a> <br />
+      <a href="#" class="link-url-futoor" style="color: black">Data protection policy</a> <br />
+      <a href="#" class="link-url-futoor" style="color: black">Contact</a> <br />
+      <p>Directory and Listing</p>
+      <p>© Copyright <%= new Date().getFullYear() %> All rights reserved.</p>
+    </div>
+    </div>
+  </body>
+</html>
