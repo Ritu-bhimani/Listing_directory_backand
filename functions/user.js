@@ -10,7 +10,7 @@ const getUserByUserID = async (userID) => {
         const result = await new Promise((resolve, reject) => {
             db.query(selectQuery, userID, (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data[0]);
             });
@@ -33,7 +33,7 @@ const changePassword = async (userID, newPassword) => {
             db.query(
                 updateQuery, [encPassword, userID], (err, data) => {
                     if (err) {
-                        reject({ success: false, error: err });
+                        reject({ success: false, error: err.toString() });
                     }
                     resolve(data);
                 });
@@ -61,20 +61,20 @@ const updateUser = async (data, userID) => {
         // userData.userName = data.userName ? data.userName : userData.userName;
         // userData.profileImgID = data.profileImgID ? data.profileImgID : userData.profileImgID;
         // userData.email = data.email ? data.email : userData.email;
-        userData.firstName = data?.firstName ? data.firstName : userData.firstName;
-        userData.lastName = data?.lastName ? data.lastName : userData.lastName;
-        userData.address = data?.address ? data.address : userData.address;
-        userData.phone = data.phone ? data.phone : userData.phone;
-        userData.bio = data?.bio ? data.bio : userData.bio;
+        userData.firstName = data?.firstName ? data.firstName : data?.firstName == "" ? null : userData.firstName;
+        userData.lastName = data?.lastName ? data.lastName : data?.lastName == "" ? null : userData.lastName;
+        userData.address = data?.address ? data.address : data?.address == "" ? null : userData.address;
+        userData.phone = data?.phone ? data.phone : data?.phone == "" ? null : userData.phone;
+        userData.bio = data?.bio ? data.bio : data?.bio == "" ? null : userData.bio;
         userData.updateDateTime = new Date().toISOString();
 
         const query = "UPDATE users SET firstName = ?, lastName = ?, address = ?, phone = ?, bio = ?, updateDateTime = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {
-            db.query(query, [userData.firstName, userData.lastName, userData.address, userData.phone, userData.bio, userData.updateDateTime, userID], (err, data) => {
+            db.query(query, [userData.firstName, userData.lastName, userData.address, userData.phone, userData.bio, userData.updateDateTime, userID], (err, resData) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
-                resolve(data);
+                resolve(resData);
             });
         });
 
@@ -85,7 +85,7 @@ const updateUser = async (data, userID) => {
             return { success: false, message: "Internal Server Error" };
         }
     } catch (err) {
-        return { success: false, error: err };
+        return { success: false, error: err.toString() };
     }
 };
 
@@ -95,15 +95,15 @@ const updateUserSocial = async (data, userID) => {
     try {
         let userData = await getUserByUserID(userID);
         // userData.socialNetworks = data ? data : userData.socialNetworks;
-        userData.socialNetworks = data ? JSON.stringify(data) : "";
-        // userData.socialNetworks = JSON.stringify(data);
+        // userData.socialNetworks = data ? JSON.stringify(data) : "";
+        userData.socialNetworks = data ? JSON.stringify(data) : {};
         userData.updateDateTime = new Date().toISOString();
 
         const query = "UPDATE users SET socialNetworks = ?, updateDateTime = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {
             db.query(query, [userData.socialNetworks, userData.updateDateTime, userID], (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             });
@@ -116,7 +116,7 @@ const updateUserSocial = async (data, userID) => {
             return { success: false, message: "Internal Server Error" };
         }
     } catch (err) {
-        return { success: false, error: err };
+        return { success: false, error: err.toString() };
     }
 };
 
@@ -127,14 +127,15 @@ const addProfileImage = async (imgPath, userID) => {
         const result = await new Promise((resolve, reject) => {
             db.query(query, [imgPath, userID], (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             });
         });
 
         if (result && result?.affectedRows > 0) {
-            return { success: true, userID: userID };
+            // return { success: true, message: "File uploaded successfully" };
+            return { success: true, userID: userID, profileImage: imgPath };
         }
         else {
             return { success: false, message: "Internal Server Error" };
@@ -142,7 +143,7 @@ const addProfileImage = async (imgPath, userID) => {
 
     }
     catch (err) {
-        return json({ success: false, error: err.toString() });
+        return { success: false, error: err.toString() };
     }
 }
 
@@ -152,15 +153,12 @@ const removeProfileImage = async (imgPath, userID) => {
     const DIR = './uploads';
     const fileName = imgPath?.split("/public")?.[1];
 
-    console.log("image path", imgPath);
-    console.log("relative path", `${DIR}${fileName}`)
-
     try {
         const query = "UPDATE users SET profileImage = ? WHERE userID = ? and profileImage = ? ";
         const result = await new Promise((resolve, reject) => {
             db.query(query, [null, userID, imgPath], (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             });
@@ -169,7 +167,7 @@ const removeProfileImage = async (imgPath, userID) => {
         if (result && result?.affectedRows > 0) {
             fs.unlink(`${DIR}${fileName}`, (err) => {
                 if (err) {
-                    console.log(err)
+                    console.log("img unlink error", err)
                 }
             })
             return { success: true, userID: userID };
@@ -182,7 +180,7 @@ const removeProfileImage = async (imgPath, userID) => {
         }
     }
     catch (err) {
-        return { error: err };
+        return { error: err.toString() };
     }
 }
 
@@ -194,7 +192,7 @@ const delteUserAccount = async (userID) => {     // this will only change user  
         const result = await new Promise((resolve, reject) => {
             db.query(updateQuery, ["notExists", userID], (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             });
@@ -217,7 +215,7 @@ const authenticateEmail = async (email, password) => {
         const result = await new Promise((resolve, reject) => {
             db.query(query, email, (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             }

@@ -143,7 +143,7 @@ const jwtTokenVerify = function (token, property) {
         }
 
         var result = getProperty(tokenObj, property)
-        console.log("result", result)
+        // console.log("result", result)
         if (result) {
             retObj.validated = true
             retObj.msg = "valid Token"
@@ -164,7 +164,7 @@ const validateEmail = (email) => {
     if (validator.isEmpty(email)) {
         emailErrs.email = "Email field is required";
     } else if (!validator.isEmail(email)) {
-        emailErrs.email = "Email is invalid";emailErrs
+        emailErrs.email = "Email is invalid"; emailErrs
     }
 
     return { emailErrs, isValidEmail: isEmpty(emailErrs) };

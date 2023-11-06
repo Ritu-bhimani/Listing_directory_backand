@@ -12,9 +12,9 @@ const router = express.Router();
 
 router.post("/signup", async (req, res) => {
 
-  if (req.body && Object.keys(req.body).length == 0) {
-    return res.status(400).json({ success: false, message: "All fields are mandatory" });
-  }
+  // if (req.body && Object.keys(req.body).length == 0) {
+  //   return res.status(400).json({ success: false, message: "All fields are mandatory" });
+  // }
 
   const reqUserData = req.body; // userName, email, role(admin, user), password, confirmPassword
 
@@ -34,7 +34,7 @@ router.post("/signup", async (req, res) => {
         [reqUserData.email.trim(), reqUserData.userName.trim()],
         (err, data) => {
           if (err) {
-            reject({ success: false, error: err });
+            reject({ success: false, error: err.toString() });
           }
           resolve(data);
         }
@@ -72,7 +72,7 @@ router.post("/signup", async (req, res) => {
             null, // lastName
             null, // phone
             null, // bio
-            null, // socialNetworks
+            JSON.stringify({}), // socialNetworks     
             null, // resetPasswordDateTime
             null, // resetPasswordToken
             "exists", // isAccountExists
@@ -89,14 +89,14 @@ router.post("/signup", async (req, res) => {
             // Create and send the JWT token
             jwt.sign({ email: reqUserData.email }, process.env.SECRET_KEY, { expiresIn: "10m" }, async (err, token) => {
               if (err) {
-                res.json({ success: false, err: err });
+                return res.json({ success: false, err: err.toString() });
               }
 
               const link = `${process.env.BASE_URL}/api/auth/verify/${token}`;
               const mailSendRes = await sendMail("registration_Confirm_Email_Template", reqUserData.email, link);
 
               let resObj = {
-                token: token, // mail verification token
+                // token: token, // mail verification token
                 userData: {
                   userName: reqUserData.userName,
                   role: reqUserData.role,
@@ -136,7 +136,7 @@ router.get("/verify/:token", async (req, res) => {
       const result = await new Promise((resolve, reject) => {
         db.query(selectQuery, decoded?.email, async (err, data) => {
           if (err) {
-            reject({ success: false, error: err });
+            reject({ success: false, error: err.toString() });
           }
           resolve(data);
         });
@@ -150,7 +150,7 @@ router.get("/verify/:token", async (req, res) => {
         const userDetail = await new Promise((resolve, reject) => {
           db.query(updateQuery, ["verified", decoded?.email], (err, data) => {
             if (err) {
-              reject({ success: false, error: err });
+              reject({ success: false, error: err.toString() });
             }
             resolve(data);
           });
@@ -180,7 +180,7 @@ router.post("/login", async (req, res) => {
     const result = await new Promise((resolve, reject) => {
       db.query(selectQuery, [emailOrUserName.trim(), emailOrUserName.trim()], (err, data) => {
         if (err) {
-          reject({ success: false, error: err });
+          reject({ success: false, error: err.toString() });
         }
         resolve(data);
       }
@@ -205,7 +205,7 @@ router.post("/login", async (req, res) => {
           // Create and send the JWT token 
           jwt.sign({ email: result[0]?.email }, process.env.SECRET_KEY, { expiresIn: "10m" }, async (err, token) => {
             if (err) {
-              return res.json({ success: false, error: err });
+              return res.json({ success: false, error: err.toString() });
             }
 
             const link = `${process.env.BASE_URL}/api/auth/verify/${token}`;
@@ -290,7 +290,7 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
     const selectRes = await new Promise((resolve, reject) => {
       db.query(selectQuery, decoded?.email, (err, data) => {
         if (err) {
-          reject({ success: false, error: err });
+          reject({ success: false, error: err.toString() });
         }
         resolve(data);
       });
@@ -312,7 +312,7 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
       const updateResult = await new Promise((resolve, reject) => {
         db.query(updatePswdQuery, [encPassword, decoded?.email, selectRes[0].resetPasswordToken], (err, data) => {
           if (err) {
-            reject({ success: false, error: err });
+            reject({ success: false, error: err.toString() });
           }
           resolve(data);
         });

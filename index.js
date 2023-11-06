@@ -39,7 +39,7 @@ app.get("/", async (req, res) => {
     db.query(
       selectQuery, "57", (err, data) => {
         if (err) {
-          reject({ success: false, error: err });
+          reject({ success: false, error: err.toString() });
         }
         resolve(data);
       }

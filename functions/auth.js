@@ -129,7 +129,7 @@ const sendPasswordResetToken = async (email) => {
     const result = await new Promise((resolve, reject) => {
       db.query(selectQuery, email.trim(), (err, data) => {
         if (err) {
-          reject({ success: false, error: err });
+          reject({ success: false, error: err.toString() });
         }
         resolve(data);
       });
@@ -139,13 +139,14 @@ const sendPasswordResetToken = async (email) => {
       return { success: false, message: "the provided email was not found" };
     } else {
       const resetPswdToken = jwt.sign({ email: result[0].email }, process.env.SECRET_KEY + result[0].userID);
+      console.log("ResetPswdToken for forgotPassword: ", `${resetPswdToken}`);
 
       const updateQuery = "UPDATE users SET resetPasswordToken = ?, resetPasswordDateTime = ? WHERE email = ?";
 
       const updateResult = await new Promise((resolve, reject) => {
         db.query(updateQuery, [resetPswdToken, resetDateTime, result[0].email], (err, data) => {
           if (err) {
-            reject({ success: false, error: err });
+            reject({ success: false, error: err.toString() });
           }
           resolve(data);
         });

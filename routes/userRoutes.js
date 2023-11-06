@@ -73,7 +73,7 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
         const result = await new Promise((resolve, reject) => {
             db.query(query, email, (err, data) => {
                 if (err) {
-                    reject({ success: false, error: err });
+                    reject({ success: false, error: err.toString() });
                 }
                 resolve(data);
             }
@@ -111,7 +111,7 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
 router.put("/updateUser", async (req, res) => {
 
     if (req.body && Object.keys(req.body).length == 0) {
-        res.send({ message: "Records doesn't update" })
+        return res.send({ success: false, message: "Records doesn't update" });
     }
 
     try {
@@ -164,49 +164,61 @@ router.put("/updateUserSocial", async (req, res) => {         // if you don't pa
 router.post("/saveProfileImage", upload.single("avatar"), async (req, res) => {       /* "avatar" - name attribute of <file> element in your form */
 
     if (!req.file) {
-        res.send({ success: false, message: "Profile image doesn't add" })
+        return res.send({ success: false, message: "Image file is required" })
     }
 
     try {
         var auth = common.validAuthHeader(req);
-        // var data = req.body;
-        // console.log("req body", data)
 
         if (auth.validated == true) {
+
+            // if profile image already exist
+            const selectQuery = "SELECT profileImage FROM users WHERE userID = ? limit 1";
+            const result = await new Promise((resolve, reject) => {
+                db.query(
+                    selectQuery, auth.userID, (err, data) => {
+                        if (err) {
+                            reject({ success: false, error: err.toString() });
+                        }
+                        resolve(data);
+                    }
+                );
+            });
+            if (result && result?.length > 0) {
+                user.removeProfileImage(result[0]?.profileImage, auth.userID)
+            }
+
+            // add new uploadede profile image
             let url = req.protocol + "://" + req.get("host");
             let fullUrl = req.file ? `${url}/public/${req.file.filename}` : "";
 
-            console.log("fullUrl", fullUrl);
-
             if (req.file) {
-                // res.status(200).json({ success: true, message: "File uploaded successfully" });
                 var retObj = await user.addProfileImage(fullUrl, auth.userID);
-                res.json(retObj);
+                return res.json(retObj);
             }
             else {
-                res.status(400).json({ success: false, message: "File upload only supports .jpeg .jpg .png format" });
+                return res.status(400).json({ success: false, message: "File upload only supports .jpeg .jpg .png format" });
             }
 
         } else {
             var resmsg = { success: false, message: "Failed auth validation" };
-            res.json(resmsg);
+            return res.json(resmsg);
         }
 
     } catch (err) {
         var result = { success: false, error: err.toString() };
-        res.json(result);
+        return res.json(result);
     }
 });
 
 
 router.put("/removeProfileImage", async (req, res) => {
-    console.log("req body", req.body);
 
     try {
         var auth = common.validAuthHeader(req);
 
         if (auth.validated == true) {
-            let imagePath = req.body.path;
+            let imagePath = req.body?.profileImage;
             let resmsg = await user.removeProfileImage(imagePath, auth.userID);
             res.send(resmsg);
         } else {
