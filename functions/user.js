@@ -1,7 +1,8 @@
-const { json } = require("express");
-const db = require("../config/dbConfig.js");
+const validator = require("validator");
+const isEmpty = require("lodash.isempty");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
+const db = require("../config/dbConfig.js");
 
 const getUserByUserID = async (userID) => {
     try {
@@ -242,6 +243,42 @@ const authenticateEmail = async (email, password) => {
 };
 
 
+const validateChangePswd = (data) => {
+    let errors = {};
+
+    data.email = data?.email ? data.email.toString() : "";
+    data.oldPassword = data?.oldPassword ? data.oldPassword.toString() : "";
+    data.newPassword = data?.newPassword ? data.newPassword.toString() : "";
+    data.confirmPassword = data?.confirmPassword ? data.confirmPassword.toString() : "";
+
+    if (validator.isEmpty(data.email)) {
+        errors.email = "email field is required";
+    } else if (!validator.isEmail(data.email)) {
+        errors.email = "Email is invalid";
+    }
+
+    if (validator.isEmpty(data.oldPassword)) {
+        errors.oldPassword = "oldPassword field is required";
+    }
+
+    if (validator.isEmpty(data.newPassword)) {
+        pswdErrs.password = "newPassword field is required";
+    } else if (!validator.isLength(data.newPassword, { min: 6, max: 30 })) {
+        errors.password = "newPassword must be at least 6 characters long";
+    }
+
+    if (validator.isEmpty(data.confirmPassword)) {
+        errors.confirmPassword = "confirmPassword field is required";
+    } else if (!validator.equals(data.newPassword, data.confirmPassword)) {
+        errors.confirmPassword = "new password and confirm password must match";
+    }
+
+    return {
+        errors,
+        isValid: isEmpty(errors),
+    };
+}
+
 module.exports = {
     getUserByUserID,
     // authenticateEmail,
@@ -250,5 +287,6 @@ module.exports = {
     updateUserSocial,
     addProfileImage,
     removeProfileImage,
-    delteUserAccount
+    delteUserAccount,
+    validateChangePswd
 }

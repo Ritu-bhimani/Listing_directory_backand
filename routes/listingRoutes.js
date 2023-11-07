@@ -10,24 +10,28 @@ const { uploadMultiple } = require("../functions/upload.js")
 
 const router = express.Router();
 
-router.post("/add", async (req, res) => {
+router.post("/add", async (req, res) => {    // requird - title, category, description   // Note: need to add array/obj type check and it's content validation from frontend side.
+    const reqUserData = req.body;
+    const { errors, isValid } = listing.validateAddListing(reqUserData);
 
-    try {
-        var itemID = await listing.addListing(data)
-        var resmsg = { success: true, itemID: itemID }
-        res.send(resmsg)
-
-        if (auth.validated == true) {
-
-        } else {
-            let resmsg = { success: false, message: "Failed auth validation" }
-            res.send(resmsg)
-        }
-    } catch (err) {
-        return res.json({ success: false, error: err.toString() })
+    if (!isValid) {
+        return res.status(400).json({ success: false, error: errors });
     }
 
-    res.json({ message: "Add listing" })
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            reqUserData.userID = auth.userID
+            let result = await listing.addListing(reqUserData)
+            return res.send(result)
+        } else {
+            var resmsg = { success: false, success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    } catch (err) {
+        return res.send({ success: false, error: err })
+    }
 })
 
 

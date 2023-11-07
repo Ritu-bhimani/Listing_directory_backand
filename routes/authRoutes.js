@@ -106,9 +106,9 @@ router.post("/signup", async (req, res) => {
               };
 
               if (mailSendRes?.success == true) {
-                return res.json({ ...resObj, isMailSent: true }); // Note: true means  -  message: "A verification email has been sent to your provided email address"    need to show message from frontend
+                return res.json({ ...resObj, isMailSent: true, success: true }); // Note: true means  -  message: "A verification email has been sent to your provided email address"    need to show message from frontend
               } else {
-                return res.json({ ...resObj, isMailSent: false });
+                return res.json({ ...resObj, isMailSent: false, success: true });
               }
             }
             );

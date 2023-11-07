@@ -41,32 +41,14 @@ router.get("/", async (req, res) => {         // need to json.parse "socialNetwo
 
 router.put("/changePassword", async (req, res) => {    // email, oldPassword, newPassword, confirmPassword
 
-    if (req.body && Object.keys(req.body).length == 0) {
-        return res.status(400).json({ success: false, message: "All fields are mandatory" });
+    const { errors, isValid } = user.validateChangePswd(req.body);
+
+    if (!isValid) {
+        return res.status(400).json({ success: false, error: errors });
     }
 
-    const { email, oldPassword, newPassword, confirmPassword } = req.body;
-
     try {
-        const { emailErrs, isValidEmail } = common.validateEmail(email);
-        const { pswdErrs, isValidPswd } = common.validatePswd(newPassword);
-        const { cnfPswdErrs, isValidConfirmPswd } = common.validateConfirmPswd(newPassword, confirmPassword);
-
-        if (!req.body?.oldPassword) {
-            return res.status(400).json({ success: false, error: "oldPassword is required" });
-        }
-
-        if (!isValidEmail) {
-            return res.status(400).json({ success: false, error: emailErrs });
-        }
-
-        if (!isValidPswd) {
-            return res.status(400).json({ success: false, error: pswdErrs });
-        }
-
-        if (!isValidConfirmPswd) {
-            return res.status(400).json({ success: false, error: cnfPswdErrs });
-        }
+        const { email, oldPassword, newPassword, confirmPassword } = req.body;
 
         const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
 
@@ -86,11 +68,11 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
             const isNewPswdOldPswdMatch = bcrypt.compareSync(newPassword, result[0]?.password);
 
             if (isPasswordMatch == false) {
-                return res.status(400).json({ authenticated: false, message: "Incorrect old password" })
+                return res.status(400).json({ success: false, message: "Incorrect old password" })
             }
 
             if (isNewPswdOldPswdMatch == true) {
-                return res.status(400).json({ authenticated: false, message: "Old password and New password are same" })
+                return res.status(400).json({ success: false, message: "Old password and New password are same" })
             }
 
             let retVal = await user.changePassword(result[0]?.userID, newPassword)
@@ -98,13 +80,79 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
 
         }
         else {
-            res.status(404).json({ authenticated: false, message: "Email not found" });
+            res.status(404).json({ success: false, message: "Email not found" });
         }
 
     } catch (err) {
         var result = { success: false, error: err.toString() }
         res.send(result)
     }
+
+    // if (req.body && Object.keys(req.body).length == 0) {
+    //     return res.status(400).json({ success: false, message: "All fields are mandatory" });
+    // }
+
+    // const { email, oldPassword, newPassword, confirmPassword } = req.body;
+
+    // try {
+    //     const { emailErrs, isValidEmail } = common.validateEmail(email);
+    //     const { pswdErrs, isValidPswd } = common.validatePswd(newPassword);
+    //     const { cnfPswdErrs, isValidConfirmPswd } = common.validateConfirmPswd(newPassword, confirmPassword);
+
+    //     if (!req.body?.oldPassword) {
+    //         return res.status(400).json({ success: false, error: "oldPassword field is required" });
+    //     }
+
+    //     if (!isValidEmail) {
+    //         return res.status(400).json({ success: false, error: emailErrs });
+    //     }
+
+    //     if (!isValidPswd) {
+    //         return res.status(400).json({ success: false, error: pswdErrs });
+    //     }
+
+    //     if (!isValidConfirmPswd) {
+    //         return res.status(400).json({ success: false, error: cnfPswdErrs });
+    //     }
+
+    //     const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
+
+    //     const result = await new Promise((resolve, reject) => {
+    //         db.query(query, email, (err, data) => {
+    //             if (err) {
+    //                 reject({ success: false, error: err.toString() });
+    //             }
+    //             resolve(data);
+    //         }
+    //         );
+    //     });
+
+    //     if (result && result?.length > 0) {
+
+    //         const isPasswordMatch = bcrypt.compareSync(oldPassword, result[0]?.password);
+    //         const isNewPswdOldPswdMatch = bcrypt.compareSync(newPassword, result[0]?.password);
+
+    //         if (isPasswordMatch == false) {
+    //             return res.status(400).json({ authenticated: false, message: "Incorrect old password" })
+    //         }
+
+    //         if (isNewPswdOldPswdMatch == true) {
+    //             return res.status(400).json({ authenticated: false, message: "Old password and New password are same" })
+    //         }
+
+    //         let retVal = await user.changePassword(result[0]?.userID, newPassword)
+    //         return res.json(retVal)
+
+    //     }
+    //     else {
+    //         res.status(404).json({ authenticated: false, message: "Email not found" });
+    //     }
+
+    // } catch (err) {
+    //     var result = { success: false, error: err.toString() }
+    //     res.send(result)
+    // }
+
 })
 
 

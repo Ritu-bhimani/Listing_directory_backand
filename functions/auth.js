@@ -157,9 +157,9 @@ const sendPasswordResetToken = async (email) => {
         const mailSendRes = await sendMail("forgot_Password_Email_Template", result[0]?.email, resetPswdUrl);
 
         if (mailSendRes?.success === true) {
-          return { isMailSent: true, email: result[0].email };
+          return { isMailSent: true, email: result[0].email, success: true };
         } else {
-          return { isMailSent: false, email: result[0].email };   // error in sending mail
+          return { sucess: true, isMailSent: false, email: result[0].email, success: false };   // error in sending mail
         }
       } else {
         return { success: false, error: "Internal Server Error" };
