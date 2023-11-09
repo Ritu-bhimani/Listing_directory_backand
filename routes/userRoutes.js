@@ -5,13 +5,13 @@ const user = require("../functions/user.js");
 const db = require("../config/dbConfig.js");
 const fs = require('fs');
 const path = require('path');
-const { upload } = require("../functions/upload.js")
+const { uploadImg, uploadProfileImage } = require("../functions/upload.js")
 
 
 const router = express.Router();
 
 
-router.get("/", async (req, res) => {         // need to json.parse "socialNetworks" data in frontend side
+router.get("/", async (req, res) => {
 
     try {
         const auth = common.validAuthHeader(req)
@@ -88,71 +88,6 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
         res.send(result)
     }
 
-    // if (req.body && Object.keys(req.body).length == 0) {
-    //     return res.status(400).json({ success: false, message: "All fields are mandatory" });
-    // }
-
-    // const { email, oldPassword, newPassword, confirmPassword } = req.body;
-
-    // try {
-    //     const { emailErrs, isValidEmail } = common.validateEmail(email);
-    //     const { pswdErrs, isValidPswd } = common.validatePswd(newPassword);
-    //     const { cnfPswdErrs, isValidConfirmPswd } = common.validateConfirmPswd(newPassword, confirmPassword);
-
-    //     if (!req.body?.oldPassword) {
-    //         return res.status(400).json({ success: false, error: "oldPassword field is required" });
-    //     }
-
-    //     if (!isValidEmail) {
-    //         return res.status(400).json({ success: false, error: emailErrs });
-    //     }
-
-    //     if (!isValidPswd) {
-    //         return res.status(400).json({ success: false, error: pswdErrs });
-    //     }
-
-    //     if (!isValidConfirmPswd) {
-    //         return res.status(400).json({ success: false, error: cnfPswdErrs });
-    //     }
-
-    //     const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
-
-    //     const result = await new Promise((resolve, reject) => {
-    //         db.query(query, email, (err, data) => {
-    //             if (err) {
-    //                 reject({ success: false, error: err.toString() });
-    //             }
-    //             resolve(data);
-    //         }
-    //         );
-    //     });
-
-    //     if (result && result?.length > 0) {
-
-    //         const isPasswordMatch = bcrypt.compareSync(oldPassword, result[0]?.password);
-    //         const isNewPswdOldPswdMatch = bcrypt.compareSync(newPassword, result[0]?.password);
-
-    //         if (isPasswordMatch == false) {
-    //             return res.status(400).json({ authenticated: false, message: "Incorrect old password" })
-    //         }
-
-    //         if (isNewPswdOldPswdMatch == true) {
-    //             return res.status(400).json({ authenticated: false, message: "Old password and New password are same" })
-    //         }
-
-    //         let retVal = await user.changePassword(result[0]?.userID, newPassword)
-    //         return res.json(retVal)
-
-    //     }
-    //     else {
-    //         res.status(404).json({ authenticated: false, message: "Email not found" });
-    //     }
-
-    // } catch (err) {
-    //     var result = { success: false, error: err.toString() }
-    //     res.send(result)
-    // }
-
 })
 
 
@@ -209,7 +144,7 @@ router.put("/updateUserSocial", async (req, res) => {         // if you don't pa
 });
 
 
-router.post("/saveProfileImage", upload.single("avatar"), async (req, res) => {       /* "avatar" - name attribute of <file> element in your form */
+router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req, res) => {       /* "avatar" - name attribute of <file> element in your form */
 
     if (!req.file) {
         return res.send({ success: false, message: "Image file is required" })
@@ -297,5 +232,19 @@ router.put("/deleteUserAccount", async (req, res) => {        // this will only 
         res.send(result)
     }
 });
+
+
+router.get("/getUserPublicInfo", async (req, res) => {      // api/user/getUserPublicInfo?username=abc
+    try {
+        let usrObj = await user.getUserPublicInfo(req.query.userName || req.query.id)
+        var resmsg = usrObj
+        res.send(resmsg)
+    }
+    catch (error) {
+        var result = { success: false, error: err.toString() }
+        res.send(result)
+    }
+});
+
 
 module.exports = router;

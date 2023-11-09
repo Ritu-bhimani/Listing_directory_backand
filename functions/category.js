@@ -6,7 +6,6 @@ const validator = require("validator");
 const isEmpty = require("lodash.isempty");
 
 const addCategory = async (data) => {
-    console.log("data ", data)
     try {
         const query = "INSERT INTO category (categoryID, categoryName) values(?,?)";
 
@@ -99,8 +98,6 @@ const getCategoryDetail = async (categoryID) => {
                 resolve(resData);
             });
         });
-
-        console.log("select result ", result)
 
         if (result && result?.length > 0) {
             return { success: true, data: result[0] };

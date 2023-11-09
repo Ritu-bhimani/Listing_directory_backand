@@ -4,6 +4,7 @@ const userRoutes = require("./userRoutes");
 const categoryRoutes = require("./categoryRoutes");
 const cityRoutes = require("./cityRoutes");
 const listingRoutes = require("./listingRoutes");
+const uploadRoutes = require("./uploadRoutes");
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.use("/api/user", userRoutes);
 router.use("/api/category", categoryRoutes);
 router.use("/api/city", cityRoutes);
 router.use("/api/listing", listingRoutes);
+router.use("/api/upload", uploadRoutes);
 
 
 module.exports = router;

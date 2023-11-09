@@ -12,40 +12,50 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        // cb(null, file.originalname);
         var newFilename = common.uuidv4() + path.extname(file.originalname).toLowerCase()
         cb(null, newFilename);
     },
 });
 
+
 const imgFileFilter = (req, file, cb) => {
-    if (file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png") {
+    const allowedExtns = [".jpeg", ".jpg", ".png"];
+
+    if (allowedExtns?.includes(path.extname(file.originalname))) {
         return cb(null, true);
     } else {
-        // return cb(("Error: File upload only supports .jpeg .jpg .png"));
-        return cb(null, false);
+        return cb(("error: File upload only supports .jpeg .jpg .png"));
+        // return cb({ message: "File upload only supports .jpeg .jpg .png" });
+        // return cb(null, false);
     }
 }
 
-const upload = multer({
+
+const uploadProfileImage = multer({
     storage: storage,
+    fileFilter: imgFileFilter,
     limits: {
-        fileSize: 1024 * 1024 * 10  // 10mb max file upload size
+        fileSize: 1024 * 1024 * 5
     },
-    fileFilter: imgFileFilter
 });
 
-const uploadMultiple = multer({
-    storage: storage,
-    limits: {
-        fileSize: 1024 * 1024 * 10  // 10mb max size
-    },
-    fileFilter: imgFileFilter
-}).array('photos', 5);       // max 5 file            // OR   uploadMultiple.array('photos', 5) while creating routes
 
+const uploadImg = multer({
+    storage: storage,
+    // fileFilter: imgFileFilter,       // uncoment if you want to allow automatic multer filter, limit check
+    // limits: {
+    //     fileSize: 1024 * 1024 * 5  // 5MB max file upload size
+    // },
+});
+
+
+const uploadImgs = multer({
+    storage: storage
+});
 
 
 module.exports = {
-    upload,
-    uploadMultiple
+    uploadImg,
+    uploadImgs,
+    uploadProfileImage
 }

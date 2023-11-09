@@ -54,7 +54,7 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json(error);
     } else {
       const insertQuery =
-        "INSERT INTO users (userID,userName, email, password, role, registerDateTime, firstName, lastName, phone, bio, socialNetworks, resetPasswordDateTime, resetPasswordToken, isAccountExists, verificationStatus, address, updateDateTime, profileImage ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        "INSERT INTO users (userID,userName, email, password, role, registerDateTime, firstName, lastName, phone, bio, socialNetworks, resetPasswordDateTime, resetPasswordToken, isAccountExists, verificationStatus, address, updateDateTime, profileImage, favourites) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
       const encPassword = bcrypt.hashSync(reqUserData.password, bcrypt.genSaltSync(10));
 
@@ -79,7 +79,8 @@ router.post("/signup", async (req, res) => {
             "notVerify", // verificationStatus
             null,  // address
             null,   // updateDateTime
-            null    // profileImage
+            null,    // profileImage
+            JSON.stringify([])  // favourites
           ],
           async (err, result) => {
             if (err) {

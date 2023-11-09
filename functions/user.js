@@ -185,6 +185,7 @@ const removeProfileImage = async (imgPath, userID) => {
     }
 }
 
+
 const delteUserAccount = async (userID) => {     // this will only change user  "isAccountExists"  status from  exists to  notExists. // not delete the record/account from user table.
     try {
         // const deleteQuery = "DELETE FROM users WHERE userID = ? ";
@@ -208,39 +209,6 @@ const delteUserAccount = async (userID) => {     // this will only change user  
         return { success: false, error: err.toString() }
     }
 }
-
-const authenticateEmail = async (email, password) => {
-    try {
-        const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
-
-        const result = await new Promise((resolve, reject) => {
-            db.query(query, email, (err, data) => {
-                if (err) {
-                    reject({ success: false, error: err.toString() });
-                }
-                resolve(data);
-            }
-            );
-        });
-
-        if (result?.length > 0) {
-            let suppliedPassword = password;
-            let storedPassword = result[0]?.password;
-            const isPasswordMatch = bcrypt.compareSync(suppliedPassword, storedPassword);
-
-            if (isPasswordMatch == true) {
-                return { authenticated: true, userID: result[0]?.userID };
-            } else {
-                return { authenticated: false, message: "Incorrect password" };
-            }
-
-        } else {
-            return { authenticated: false };
-        }
-    } catch (err) {
-        return { success: false, error: err.toString() };
-    }
-};
 
 
 const validateChangePswd = (data) => {
@@ -279,6 +247,71 @@ const validateChangePswd = (data) => {
     };
 }
 
+
+const getUserPublicInfo = async (userNameOrId) => {
+
+    try {
+        const query = "SELECT userID, userName, email, firstName, lastName, phone, bio, socialNetworks, verificationStatus, address, profileImage FROM users WHERE userName = ? OR userID = ? ";
+        const result = await new Promise((resolve, reject) => {
+            db.query(
+                query, [userNameOrId, userNameOrId], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        if (result && result?.length > 0) {
+            return { success: true, data: result[0] };
+        } else if (result && result?.length == 0) {
+            return { success: false, message: "User doesn't found" };
+        } else {
+            const resMsg = { ...result };          // internal server error
+            return resMsg
+        }
+
+    } catch (error) {
+        return { success: false, error: err.toString() }
+    }
+
+};
+
+
+const authenticateEmail = async (email, password) => {
+    try {
+        const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
+
+        const result = await new Promise((resolve, reject) => {
+            db.query(query, email, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        if (result?.length > 0) {
+            let suppliedPassword = password;
+            let storedPassword = result[0]?.password;
+            const isPasswordMatch = bcrypt.compareSync(suppliedPassword, storedPassword);
+
+            if (isPasswordMatch == true) {
+                return { authenticated: true, userID: result[0]?.userID };
+            } else {
+                return { authenticated: false, message: "Incorrect password" };
+            }
+
+        } else {
+            return { authenticated: false };
+        }
+    } catch (err) {
+        return { success: false, error: err.toString() };
+    }
+};
+
 module.exports = {
     getUserByUserID,
     // authenticateEmail,
@@ -288,5 +321,6 @@ module.exports = {
     addProfileImage,
     removeProfileImage,
     delteUserAccount,
-    validateChangePswd
+    validateChangePswd,
+    getUserPublicInfo
 }
