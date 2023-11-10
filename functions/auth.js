@@ -122,7 +122,8 @@ const sendPasswordResetToken = async (email) => {
   }
 
   try {
-    const resetDateTime = new Date().toISOString();
+    // const resetDateTime = new Date().toISOString();
+    const resetDateTime = new Date();
 
     const selectQuery = "SELECT * FROM users WHERE email = ? limit 1";
 
@@ -144,7 +145,8 @@ const sendPasswordResetToken = async (email) => {
       const updateQuery = "UPDATE users SET resetPasswordToken = ?, resetPasswordDateTime = ? WHERE email = ?";
 
       const updateResult = await new Promise((resolve, reject) => {
-        db.query(updateQuery, [resetPswdToken, resetDateTime, result[0].email], (err, data) => {
+        // db.query(updateQuery, [resetPswdToken, resetDateTime, result[0].email], (err, data) => {
+        db.query(updateQuery, [resetPswdToken, resetDateTime?.toISOString().slice(0, 19).replace('T', ' '), result[0].email], (err, data) => {
           if (err) {
             reject({ success: false, error: err.toString() });
           }

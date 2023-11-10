@@ -4,6 +4,30 @@ const db = require("../config/dbConfig.js");
 
 const addCity = async (data) => {
     try {
+
+        const selectQuery = "SELECT cityName FROM city";
+
+        const selectResult = await new Promise((resolve, reject) => {
+            db.query(
+                selectQuery, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        if (selectResult && selectResult.length > 0) {
+            let cityNames = [];
+            cityNames = selectResult?.map(curr => curr?.cityName?.toLowerCase());
+
+            if (cityNames && cityNames?.includes(data?.cityName?.toLowerCase())) {
+                return { success: false, message: "city already exists" }
+            }
+        }
+
+
         const query = "INSERT INTO city (cityID, cityName) values(?,?)";
 
         const result = await new Promise((resolve, reject) => {

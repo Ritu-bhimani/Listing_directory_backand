@@ -58,6 +58,7 @@ const updateUser = async (data, userID) => {
 
     try {
         const userData = await getUserByUserID(userID);
+        const date = new Date();
 
         // userData.userName = data.userName ? data.userName : userData.userName;
         // userData.profileImgID = data.profileImgID ? data.profileImgID : userData.profileImgID;
@@ -67,7 +68,8 @@ const updateUser = async (data, userID) => {
         userData.address = data?.address ? data.address : data?.address == "" ? null : userData.address;
         userData.phone = data?.phone ? data.phone : data?.phone == "" ? null : userData.phone;
         userData.bio = data?.bio ? data.bio : data?.bio == "" ? null : userData.bio;
-        userData.updateDateTime = new Date().toISOString();
+        // userData.updateDateTime = new Date().toISOString();
+        userData.updateDateTime = date.toISOString().slice(0, 19).replace('T', ' ')
 
         const query = "UPDATE users SET firstName = ?, lastName = ?, address = ?, phone = ?, bio = ?, updateDateTime = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {
@@ -95,10 +97,13 @@ const updateUserSocial = async (data, userID) => {
 
     try {
         let userData = await getUserByUserID(userID);
+        const date = new Date();
+
         // userData.socialNetworks = data ? data : userData.socialNetworks;
         // userData.socialNetworks = data ? JSON.stringify(data) : "";
         userData.socialNetworks = data ? JSON.stringify(data) : {};
-        userData.updateDateTime = new Date().toISOString();
+        // userData.updateDateTime = new Date().toISOString();
+        userData.updateDateTime = date.toISOString().slice(0, 19).replace('T', ' ');
 
         const query = "UPDATE users SET socialNetworks = ?, updateDateTime = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {

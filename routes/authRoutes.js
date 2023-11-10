@@ -58,6 +58,8 @@ router.post("/signup", async (req, res) => {
 
       const encPassword = bcrypt.hashSync(reqUserData.password, bcrypt.genSaltSync(10));
 
+      const date = new Date();
+
       const result3 = await new Promise((resolve, reject) => {
         db.query(
           insertQuery,
@@ -67,7 +69,7 @@ router.post("/signup", async (req, res) => {
             reqUserData.email.trim(),     // email
             encPassword,            // password
             reqUserData.role.trim(), // role
-            new Date().toISOString(), // registerDateTime
+            date.toISOString().slice(0, 19).replace('T', ' '), // registerDateTime                 // new Date().toISOString(), // registerDateTime
             null, // firstName
             null, // lastName
             null, // phone

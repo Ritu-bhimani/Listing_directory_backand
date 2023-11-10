@@ -7,9 +7,32 @@ const isEmpty = require("lodash.isempty");
 
 const addCategory = async (data) => {
     try {
-        const query = "INSERT INTO category (categoryID, categoryName) values(?,?)";
+
+        const selectQuery = "SELECT categoryName FROM category";
 
         const result = await new Promise((resolve, reject) => {
+            db.query(
+                selectQuery, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        if (result && result.length > 0) {
+            let categoryNames = [];
+            categoryNames = result?.map(curr => curr?.categoryName?.toLowerCase());
+
+            if (categoryNames && categoryNames?.includes(data?.categoryName?.toLowerCase())) {
+                return { success: false, message: "category already exists" }
+            }
+        }
+
+        const query = "INSERT INTO category (categoryID, categoryName) values(?,?)";
+
+        const insertResult = await new Promise((resolve, reject) => {
             db.query(query, [null, data.categoryName], (err, resData) => {
                 if (err) {
                     reject({ success: false, error: err.toString() });
@@ -18,8 +41,8 @@ const addCategory = async (data) => {
             });
         });
 
-        if (result && result?.insertId) {
-            return { success: true, categoryID: result?.insertId };
+        if (insertResult && insertResult?.insertId) {
+            return { success: true, categoryID: insertResult?.insertId };
         } else {
             return { success: false, message: "Internal server error." }
         }

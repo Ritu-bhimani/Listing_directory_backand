@@ -10,7 +10,9 @@ let addListing = async (data) => {   // requird - title, category, description
     try {
         const insertQuery =
             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, review, updateDateTime, isListingExists) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-
+        
+        const date = new Date();
+        
         const result = await new Promise((resolve, reject) => {
             db.query(
                 insertQuery,
@@ -33,7 +35,7 @@ let addListing = async (data) => {   // requird - title, category, description
                     JSON.stringify(data?.bsImages || []),      // bsImages,
                     data?.bsLogo || null,                       // bsLogo
                     "Pending",                  // listingStatus  enum('Approved', 'Canceled', 'Pending')
-                    new Date().toISOString(),   // postedDateTime
+                    date.toISOString().slice(0, 19).replace('T', ' '),   // postedDateTime       // new Date().toISOString(),   // postedDateTime
                     JSON.stringify([]),          // review
                     null,                         //  updateDateTime
                     "exists"                     //  isListingExists
@@ -98,6 +100,7 @@ const editListing = async (data) => {
         }
 
         const listingData = listingDataResult[0];
+        const date = new Date();
 
         listingData.title = data?.title ? data.title : data?.title == "" ? null : listingData.title;
         listingData.listingCityID = data?.listingCityID ? data.listingCityID : data.listingCityID == "" ? null : listingData.listingCityID;
@@ -115,7 +118,8 @@ const editListing = async (data) => {
         listingData.faqs = data?.faqs ? data.faqs : listingData.faqs;
         listingData.bsImages = data?.bsImages ? data.bsImages : listingData.bsImages;
         listingData.socialMedia = data?.socialMedia ? data.socialMedia : listingData.socialMedia;
-        listingData.updateDateTime = new Date().toISOString();
+        // listingData.updateDateTime = new Date().toISOString();
+        listingData.updateDateTime = date.toISOString().slice(0, 19).replace('T', ' ')
 
         // listingStatus, review, postedDateTime, isListingExists - user can't change
 
