@@ -32,9 +32,9 @@ router.post("/add", async (req, res) => {    // requird - title, category, descr
 
 router.put("/edit", async (req, res) => {
 
-    if (req.body && Object.keys(req.body).length == 0) {
-        return res.send({ success: false, message: "Records doesn't update" });
-    }
+    // if (req.body && Object.keys(req.body).length == 0) {
+    //     return res.send({ success: false, message: "Records doesn't update" });
+    // }
 
     const reqUserData = req.body;
     const { errors, isValid } = listing.validateEditListing(reqUserData);
