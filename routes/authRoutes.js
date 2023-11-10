@@ -215,7 +215,7 @@ router.post("/login", async (req, res) => {
             const mailSendRes = await sendMail("registration_Confirm_Email_Template", result[0]?.email, link);
 
             let resObj = {
-              token: token, // mail verification token
+              // token: token, // mail verification token
               userData: {
                 userName: result[0]?.userName,
                 role: result[0]?.role,
