@@ -45,7 +45,7 @@ const addCity = async (data) => {
             return { success: false, message: "Internal server error." }
         }
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -72,7 +72,7 @@ const editCity = async (data) => {
             return { success: false, message: "Internal server error" }
         }
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -100,7 +100,7 @@ const deleteCity = async (data) => {
             return { success: false, message: "Internal server error" }
         }
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -128,7 +128,7 @@ const getCityDetail = async (cityID) => {
         }
 
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 

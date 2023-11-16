@@ -25,7 +25,7 @@ router.post("/add", async (req, res) => {    // requird - title, category, descr
             return res.send(resmsg)
         }
     } catch (err) {
-        return res.send({ success: false, error: err.toString() })
+        return res.send({ success: false, error: err })
     }
 })
 
@@ -54,7 +54,7 @@ router.put("/edit", async (req, res) => {
             return res.send(resmsg)
         }
     } catch (err) {
-        return res.send({ success: false, error: err.toString() })
+        return res.send({ success: false, error: err })
     }
 
 })
@@ -77,7 +77,7 @@ router.put("/remove", async (req, res) => {  // this will only change listing  "
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });
@@ -90,7 +90,7 @@ router.get("/allListing", async (req, res) => {
         res.send(listingsData);
     }
     catch (error) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });
@@ -109,7 +109,7 @@ router.get("/myListing", async (req, res) => {
         }
     }
     catch (error) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 })
@@ -121,7 +121,7 @@ router.get("/:id", async (req, res) => {            // api/listing/:id
         let result = await listing.getListing(listingID);
         res.send(result);
     } catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });
@@ -140,7 +140,7 @@ router.put("/changeFavourite", async (req, res) => {
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 })

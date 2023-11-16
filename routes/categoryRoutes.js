@@ -22,7 +22,7 @@ router.post("/add", async (req, res) => {  //  categoryName
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         return res.send(result)
     }
 });
@@ -48,7 +48,7 @@ router.put("/edit", async (req, res) => {
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         return res.send(result)
     }
 })
@@ -73,7 +73,7 @@ router.delete("/remove", async (req, res) => {
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         return res.send(result)
     }
 })
@@ -98,7 +98,7 @@ router.get("/", async (req, res) => {
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         return res.send(result)
     }
 })

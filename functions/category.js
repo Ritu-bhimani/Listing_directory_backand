@@ -48,7 +48,7 @@ const addCategory = async (data) => {
         }
 
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -76,7 +76,7 @@ const editCategory = async (data) => {
         }
 
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -105,7 +105,7 @@ const deleteCategory = async (data) => {
         }
 
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 
@@ -133,7 +133,7 @@ const getCategoryDetail = async (categoryID) => {
         }
 
     } catch (err) {
-        return { success: false, err: err.toString() };
+        return { success: false, err: err };
     }
 }
 

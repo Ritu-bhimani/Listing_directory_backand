@@ -28,7 +28,7 @@ router.post("/single", uploadImg.single("file"), async (req, res) => {
             if (req.file?.size > (1024 * 1024 * 5)) {    // 5MB max
                 fs.unlink(`${DIR}${req.file.filename}`, (err) => {
                     if (err) {
-                        console.log("img unlink error", err)
+                        console.log("img unlink error", err.toString())
                     }
                 });
                 return res.status(400).send({ success: false, error: "Payload Too Large. Please choose a smaller image." })
@@ -41,7 +41,7 @@ router.post("/single", uploadImg.single("file"), async (req, res) => {
             return res.status(400).send({ success: false, message: "File is required" })
         }
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.toString() });
+        return res.status(500).json({ success: false, error: err });
     }
 });
 
@@ -79,7 +79,7 @@ router.post("/multiple", uploadImgs.array("files"), async (req, res) => {
                 if (!allowedExtns.includes(path.extname(file.originalname)) || file.size > 1024 * 1024 * 5) {
                     fs.unlink(file.path, (err) => {
                         if (err) {
-                            console.log("img unlink error", err);
+                            console.log("img unlink error", err.toString());
                         }
                     });
                 } else {
@@ -92,7 +92,7 @@ router.post("/multiple", uploadImgs.array("files"), async (req, res) => {
             return res.status(400).send({ success: false, message: "Files are required" });
         }
     } catch (err) {
-        return res.status(500).json({ success: false, error: err.toString() });
+        return res.status(500).json({ success: false, error: err });
     }
 });
 

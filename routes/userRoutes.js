@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
             res.send(resmsg)
         }
     } catch (err) {
-        return res.json({ success: false, error: err.toString() })
+        return res.json({ success: false, error: err })
     }
 })
 
@@ -84,7 +84,7 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
         }
 
     } catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 
@@ -109,7 +109,7 @@ router.put("/updateUser", async (req, res) => {
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });
@@ -138,7 +138,7 @@ router.put("/updateUserSocial", async (req, res) => {         // if you don't pa
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() };
+        var result = { success: false, error: err };
         res.send(result)
     }
 });
@@ -189,7 +189,7 @@ router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req
         }
 
     } catch (err) {
-        var result = { success: false, error: err.toString() };
+        var result = { success: false, error: err };
         return res.json(result);
     }
 });
@@ -209,7 +209,7 @@ router.put("/removeProfileImage", async (req, res) => {
             res.send(resmsg);
         }
     } catch (err) {
-        var result = { success: false, error: err.toString() };
+        var result = { success: false, error: err };
         res.send(result);
     }
 });
@@ -228,7 +228,7 @@ router.put("/deleteUserAccount", async (req, res) => {        // this will only 
         }
     }
     catch (err) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });
@@ -241,7 +241,7 @@ router.get("/getUserPublicInfo", async (req, res) => {      // api/user/getUserP
         res.send(resmsg)
     }
     catch (error) {
-        var result = { success: false, error: err.toString() }
+        var result = { success: false, error: err }
         res.send(result)
     }
 });

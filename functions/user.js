@@ -19,7 +19,7 @@ const getUserByUserID = async (userID) => {
         return result;
 
     } catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 };
 
@@ -48,7 +48,7 @@ const changePassword = async (userID, newPassword) => {
         }
 
     } catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 };
 
@@ -88,7 +88,7 @@ const updateUser = async (data, userID) => {
             return { success: false, message: "Internal Server Error" };
         }
     } catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 };
 
@@ -122,7 +122,7 @@ const updateUserSocial = async (data, userID) => {
             return { success: false, message: "Internal Server Error" };
         }
     } catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 };
 
@@ -149,7 +149,7 @@ const addProfileImage = async (imgPath, userID) => {
 
     }
     catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 }
 
@@ -173,20 +173,20 @@ const removeProfileImage = async (imgPath, userID) => {
         if (result && result?.affectedRows > 0) {
             fs.unlink(`${DIR}${fileName}`, (err) => {
                 if (err) {
-                    console.log("img unlink error", err)
+                    console.log("img unlink error", err.toString())
                 }
             })
             return { success: true, userID: userID };
         }
         else if (result && result?.affectedRows == 0) {
-            return { success: false, msg: "Image path is not valid" }
+            return { success: false, message: "Image path is not valid" }
         }
         else {
             return { success: false, message: "Internal Server Error" };
         }
     }
     catch (err) {
-        return { error: err.toString() };
+        return { success: false, error: err };
     }
 }
 
@@ -211,7 +211,7 @@ const delteUserAccount = async (userID) => {     // this will only change user  
             return { success: false, message: "Internal server error" }
         }
     } catch (err) {
-        return { success: false, error: err.toString() }
+        return { success: false, error: err }
     }
 }
 
@@ -278,7 +278,7 @@ const getUserPublicInfo = async (userNameOrId) => {
         }
 
     } catch (error) {
-        return { success: false, error: err.toString() }
+        return { success: false, error: err }
     }
 
 };
@@ -313,7 +313,7 @@ const authenticateEmail = async (email, password) => {
             return { authenticated: false };
         }
     } catch (err) {
-        return { success: false, error: err.toString() };
+        return { success: false, error: err };
     }
 };
 

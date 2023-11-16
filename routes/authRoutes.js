@@ -121,7 +121,7 @@ router.post("/signup", async (req, res) => {
       });
     }
   } catch (err) {
-    var resmsg = { success: false, err: err.toString() };
+    var resmsg = { success: false, err: err };
     return res.json(resmsg);
   }
 });
@@ -252,7 +252,7 @@ router.post("/login", async (req, res) => {
       res.json({ success: false, error: "User does not exists!" });
     }
   } catch (err) {
-    return res.status(500).json({ error: err.toString() });
+    return res.status(500).json({ error: err });
   }
 });
 
@@ -263,7 +263,7 @@ router.post("/forgotPassword", async (req, res) => {    // email
     let usrObj = await auth.sendPasswordResetToken(req.body?.email);
     res.send(usrObj);
   } catch (err) {
-    var result = { success: false, error: err.toString() };
+    var result = { success: false, error: err };
     res.send(result);
   }
 });
@@ -330,7 +330,7 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
       }
     });
   } catch (err) {
-    var result = { success: false, error: err.toString() };
+    var result = { success: false, error: err };
     res.send(result);
   }
 });
