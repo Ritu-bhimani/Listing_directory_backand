@@ -127,12 +127,41 @@ router.get("/:id", async (req, res) => {            // api/listing/:id
 });
 
 
-router.put("/changeFavourite", async (req, res) => {
+router.post("/addToFavourite", async (req, res) => {
+
+    if (!req.body?.listingID) {
+        return res.status(400).send({ success: false, message: "listingID is required" })
+    }
+
     try {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
-            var result = await listing.changeFavourite(auth?.userID, req.body.favourites)
+            var result = await listing.addToFavourite(auth?.userID, req.body?.listingID)
+            res.json(result)
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            res.json(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        res.send(result)
+    }
+})
+
+
+router.put("/removeFromFavourite", async (req, res) => {
+
+    if (!req.body.listingID) {
+        return res.status(400).send({ success: false, message: "listingID is required" })
+    }
+
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            var result = await listing.removeFromFavourite(auth?.userID, req.body?.listingID)
             res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }

@@ -10,9 +10,9 @@ let addListing = async (data) => {   // requird - title, category, description
     try {
         const insertQuery =
             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, review, updateDateTime, isListingExists) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
-        
+
         const date = new Date();
-        
+
         const result = await new Promise((resolve, reject) => {
             db.query(
                 insertQuery,
@@ -61,7 +61,7 @@ let addListing = async (data) => {   // requird - title, category, description
     }
 }
 
-const validateAddListing = (data) => {  
+const validateAddListing = (data) => {
     let errors = {};
 
     data.title = data?.title ? data.title.toString() : "";
@@ -329,12 +329,50 @@ const getListing = async (listingID) => {
     }
 }
 
-const changeFavourite = async (userID, favourites) => {
+const addToFavourite = async (userID, listingID) => {
     try {
-        const query = "UPDATE users SET favourites = ? WHERE userID = ?";
-        const result = await new Promise((resolve, reject) => {
+
+        // check listingID exists
+        const selectListingQuery = "SELECT count(*) AS listingCount FROM listing WHERE listingID = ? ";
+        const selectListingRes = await new Promise((resolve, reject) => {
+            db.query(selectListingQuery, listingID, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        if (selectListingRes[0] && !selectListingRes[0]?.listingCount > 0) {
+            return { success: false, message: "listingID is invalid" }
+        }
+
+        // get user favourites listings
+        const selectQuery = "SELECT favourites FROM users WHERE userID = ? limit 1";
+        const selectRes = await new Promise((resolve, reject) => {
+            db.query(selectQuery, userID, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        let userFavourites = [];
+        userFavourites = JSON.parse(selectRes[0].favourites);
+
+        if (userFavourites && userFavourites.includes(listingID)) {
+            return { success: false, message: "This listing already present in your favourite listings list" }
+        }
+
+        // add listing to favourites
+        userFavourites.push(listingID)
+        const updateQuery = "UPDATE users SET favourites = ? WHERE userID = ?";
+        const updateRes = await new Promise((resolve, reject) => {
             db.query(
-                query, [JSON.stringify(favourites), userID], (err, data) => {
+                updateQuery, [JSON.stringify(userFavourites), userID], (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -343,7 +381,48 @@ const changeFavourite = async (userID, favourites) => {
             );
         });
 
-        if (result && result?.affectedRows > 0) {
+        if (updateRes && updateRes?.affectedRows > 0) {
+            return { success: true }
+        }
+        else {
+            return { success: false }
+        }
+    } catch (error) {
+        return { success: false, error: err }
+    }
+}
+
+const removeFromFavourite = async (userID, listingID) => {
+    try {
+        const selectQuery = "SELECT favourites FROM users WHERE userID = ? limit 1";
+        const selectRes = await new Promise((resolve, reject) => {
+            db.query(selectQuery, userID, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        let userFavourites = [];
+        userFavourites = JSON.parse(selectRes[0].favourites);
+
+        userFavourites = userFavourites.filter(listingId => listingId !== listingID)
+
+        const updateQuery = "UPDATE users SET favourites = ? WHERE userID = ?";
+        const updateRes = await new Promise((resolve, reject) => {
+            db.query(
+                updateQuery, [JSON.stringify(userFavourites), userID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        if (updateRes && updateRes?.affectedRows > 0) {
             return { success: true }
         }
         else {
@@ -364,5 +443,6 @@ module.exports = {
     getAllListing,
     getMyListing,
     getListing,
-    changeFavourite
+    addToFavourite,
+    removeFromFavourite
 };
