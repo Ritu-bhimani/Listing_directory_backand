@@ -7,6 +7,7 @@ const common = require("../functions/common.js");
 const jwt = require("jsonwebtoken");
 const { jwtDecode } = require("jwt-decode");
 const { sendMail } = require("../middlewares/sendMail.js");
+const { decode } = require('jwt-js-decode');
 
 const router = express.Router();
 
@@ -276,7 +277,8 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
 
   try {
     const { resetPswdToken, newPassword } = req.body;
-    const decoded = jwtDecode(resetPswdToken);
+    // const decoded = jwtDecode(resetPswdToken);
+    const decoded = decode(resetPswdToken)?.payload;
 
     const { emailErrors, isValidEmail } = auth.validateEmail(decoded?.email);
     const { pswdErrors, isValidPswd } = auth.validatePswd(newPassword);
