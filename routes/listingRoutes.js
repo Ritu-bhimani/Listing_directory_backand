@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/add", async (req, res) => {    // requird - title, category, description   // Note: need to add array/obj type check and it's content validation from frontend side.
     const reqUserData = req.body;
-    const { errors, isValid } = listing.validateAddListing(reqUserData);
+    const { errors, isValid } = await listing.validateAddListingFields(reqUserData);
 
     if (!isValid) {
         return res.status(400).json({ success: false, error: errors });
@@ -37,7 +37,7 @@ router.put("/edit", async (req, res) => {
     // }
 
     const reqUserData = req.body;
-    const { errors, isValid } = listing.validateEditListing(reqUserData);
+    const { errors, isValid } = await listing.validateEditListingFields(reqUserData);
 
     if (!isValid) {
         return res.status(400).json({ success: false, error: errors });
@@ -114,6 +114,7 @@ router.get("/myListing", async (req, res) => {
     }
 })
 
+
 router.get("/myFavourites", async (req, res) => {
     try {
         var auth = common.validAuthHeader(req)
@@ -132,6 +133,7 @@ router.get("/myFavourites", async (req, res) => {
     }
 })
 
+
 router.get("/myFavouritesIds", async (req, res) => {
     try {
         var auth = common.validAuthHeader(req)
@@ -149,6 +151,7 @@ router.get("/myFavouritesIds", async (req, res) => {
         res.send(result)
     }
 })
+
 
 router.get("/:id", async (req, res) => {            // api/listing/:id
     try {

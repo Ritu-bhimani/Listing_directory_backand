@@ -61,7 +61,7 @@ let addListing = async (data) => {   // requird - title, category, description
     }
 }
 
-const validateAddListing = (data) => {
+const validateAddListingFields = async (data) => {
     let errors = {};
 
     data.title = data?.title ? data.title.toString() : "";
@@ -79,6 +79,9 @@ const validateAddListing = (data) => {
     if (validator.isEmpty(data.description)) {
         errors.description = "description field is required";
     }
+
+    const additionalErrors = await validateListingRemainFields(data) // address, price, businessHours, socialMedia, faqs, bsImages
+    errors = { ...errors, ...additionalErrors }
 
     return {
         errors,
@@ -103,10 +106,10 @@ const editListing = async (data) => {
         const date = new Date();
 
         listingData.title = data?.title ? data.title : data?.title == "" ? null : listingData.title;
-        listingData.listingCityID = data?.listingCityID ? data.listingCityID : data.listingCityID == "" ? null : listingData.listingCityID;
+        listingData.listingCityID = data?.city ? data.city : data.city == "" ? null : listingData.listingCityID;
         listingData.phone = data?.phone ? data.phone : data.phone == "" ? null : listingData.phone;
         listingData.website = data?.website ? data.website : data.website == "" ? null : listingData.website;
-        listingData.categoryID = data?.categoryID ? data.categoryID : data.categoryID == "" ? null : listingData.categoryID;
+        listingData.categoryID = data?.category ? data.category : data.category == "" ? null : listingData.categoryID;
         listingData.description = data?.description ? data.description : data?.description == "" ? null : listingData.description;
         listingData.keywords = data?.keywords ? data.keywords : data?.keywords == "" ? null : listingData.keywords;
         listingData.bsVideoUrl = data?.bsVideoUrl ? data.bsVideoUrl : data.bsVideoUrl == "" ? null : listingData.bsVideoUrl;
@@ -191,7 +194,7 @@ const getListingByID = async (listingID) => {
     }
 };
 
-const validateEditListing = (data) => {  // requird fields - listingID, title, category, description
+const validateEditListingFields = async (data) => {  // requird fields - listingID, title, category, description
     let errors = {};
 
     data.listingID = data?.listingID ? data.listingID.toString() : "";
@@ -214,6 +217,9 @@ const validateEditListing = (data) => {  // requird fields - listingID, title, c
     if (validator.isEmpty(data.description)) {
         errors.description = "description field is required";
     }
+
+    const additionalErrors = await validateListingRemainFields(data) // address, price, businessHours, socialMedia, faqs, bsImages
+    errors = { ...errors, ...additionalErrors }
 
     return {
         errors,
@@ -474,11 +480,37 @@ const getMyFavouritesListingsIDs = async (userID) => {
     }
 }
 
+const validateListingRemainFields = async (data) => {
+    let errors = {}
+
+    // if ((data?.address || data?.address === "") && typeof data.address !== "object") {       // if user pass address: "" then also it will check validation
+    if (data.hasOwnProperty("address") && typeof data.address !== "object" || Array.isArray(data.address) ) {
+        errors.address = "Address field must be an object";
+    }
+    if (data.hasOwnProperty("price") && typeof data.price !== "object" || Array.isArray(data.price) ) {
+        errors.price = "Price field must be an object";
+    }
+    if (data.hasOwnProperty("businessHours") && !Array.isArray(data.businessHours)) {
+        errors.businessHours = "Business Hours field must be an array";
+    }
+    if (data.hasOwnProperty("socialMedia") && !Array.isArray(data.socialMedia)) {
+        errors.socialMedia = "Social Media field must be an array";
+    }
+    if (data.hasOwnProperty("faqs") && !Array.isArray(data.faqs)) {
+        errors.faqs = "FAQs field must be an array";
+    }
+    if (data.hasOwnProperty("bsImages") && !Array.isArray(data.bsImages)) {
+        errors.bsImages = "Business Images field must be an array";
+    }
+
+    return errors
+}
+
 module.exports = {
     addListing,
-    validateAddListing,
+    validateAddListingFields,
     editListing,
-    validateEditListing,
+    validateEditListingFields,
     getListingByID,
     deleteListing,
     getAllListing,
