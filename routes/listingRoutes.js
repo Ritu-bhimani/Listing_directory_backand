@@ -114,6 +114,41 @@ router.get("/myListing", async (req, res) => {
     }
 })
 
+router.get("/myFavourites", async (req, res) => {
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let favListingsData = await listing.getMyFavouritesWithDetails(auth.userID);
+            res.send(favListingsData);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    }
+    catch (error) {
+        var result = { success: false, error: err }
+        res.send(result)
+    }
+})
+
+router.get("/myFavouritesIds", async (req, res) => {
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let favListingsIds = await listing.getMyFavouritesListingsIDs(auth.userID);
+            res.send(favListingsIds);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    }
+    catch (error) {
+        var result = { success: false, error: err }
+        res.send(result)
+    }
+})
 
 router.get("/:id", async (req, res) => {            // api/listing/:id
     try {

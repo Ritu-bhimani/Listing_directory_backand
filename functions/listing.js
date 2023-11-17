@@ -263,11 +263,8 @@ const getAllListing = async () => {
 
         if (result && result?.length > 0) {
             return { success: true, data: result };
-        } else if (result && result?.length == 0) {
-            return { success: false, message: "No listings found" };
         } else {
-            const resMsg = { ...result };
-            return resMsg
+            return { success: false, message: "No listings found" };
         }
     } catch (err) {
         return { success: false, error: err }
@@ -290,11 +287,8 @@ const getMyListing = async (ownerID) => {
 
         if (result && result?.length > 0) {
             return { success: true, data: result };
-        } else if (result && result?.length == 0) {
-            return { success: false, message: "No listings found" };
         } else {
-            const resMsg = { ...result };          // internal server error
-            return resMsg
+            return { success: false, message: "No listings found" };
         }
     } catch (err) {
         return { success: false, error: err }
@@ -317,11 +311,8 @@ const getListing = async (listingID) => {
 
         if (result && result?.length > 0) {
             return { success: true, data: result[0] };
-        } else if (result && result?.length == 0) {
-            return { success: false, message: "listing ID is invalid" };
         } else {
-            const resMsg = { ...result };
-            return resMsg
+            return { success: false, message: "listing ID is invalid" };
         }
 
     } catch (error) {
@@ -361,7 +352,7 @@ const addToFavourite = async (userID, listingID) => {
         });
 
         let userFavourites = [];
-        userFavourites = JSON.parse(selectRes[0].favourites);
+        userFavourites = JSON.parse(selectRes[0]?.favourites);
 
         if (userFavourites && userFavourites.includes(listingID)) {
             return { success: false, message: "This listing already present in your favourite listings list" }
@@ -406,7 +397,7 @@ const removeFromFavourite = async (userID, listingID) => {
         });
 
         let userFavourites = [];
-        userFavourites = JSON.parse(selectRes[0].favourites);
+        userFavourites = JSON.parse(selectRes[0]?.favourites);
 
         userFavourites = userFavourites.filter(listingId => listingId !== listingID)
 
@@ -433,6 +424,56 @@ const removeFromFavourite = async (userID, listingID) => {
     }
 }
 
+const getMyFavouritesWithDetails = async (userID) => {
+    try {
+        const query = "SELECT li.* FROM users AS u INNER JOIN listing AS li ON u.userID = li.userID WHERE u.userID = ? AND JSON_CONTAINS(u.favourites, li.listingID)";
+
+        const selectRes = await new Promise((resolve, reject) => {
+            db.query(query, [userID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        if (selectRes && selectRes?.length > 0) {
+            return { success: true, data: selectRes };
+        } else {
+            return { success: false, message: "No favourite listings found" };     //  favourites will be empty []  
+        }
+
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
+
+const getMyFavouritesListingsIDs = async (userID) => {
+    try {
+        const query = "SELECT favourites FROM users WHERE userID = ? limit 1";
+
+        const selectRes = await new Promise((resolve, reject) => {
+            db.query(query, [userID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
+
+        if (selectRes && selectRes?.length > 0) {             // if userID exists, every time will get [{favourites: []}], evenIf favourites is [] array.
+            return { success: true, data: selectRes[0] };
+        } else if (selectRes && selectRes?.length == 0) {
+            return { success: false, message: "userID is invalid" };     //  means selectedRes is empty [] 
+        }
+
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
+
 module.exports = {
     addListing,
     validateAddListing,
@@ -444,5 +485,7 @@ module.exports = {
     getMyListing,
     getListing,
     addToFavourite,
-    removeFromFavourite
+    removeFromFavourite,
+    getMyFavouritesWithDetails,
+    getMyFavouritesListingsIDs
 };
