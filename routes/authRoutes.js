@@ -227,9 +227,9 @@ router.post("/login", async (req, res) => {
 
             if (mailSendRes.success == true) {
               // if user is not verified then only will send 'isMailSent'. login & signup both ma.
-              return res.status(400).json({ success: false, message: "Go to inbox to first verify your email address", isMailSent: true });
+              return res.status(400).json({ success: false, message: "Go to your inbox to first verify your email address", isMailSent: true });
             } else {
-              return res.status(400).json({ success: false, message: "Go to inbox to first verify your email address", isMailSent: false });
+              return res.status(500).json({ success: false, message: "Error in sending verification mail, please try again", isMailSent: false });
             }
 
           }
@@ -259,13 +259,14 @@ router.post("/login", async (req, res) => {
 
 
 router.post("/forgotPassword", async (req, res) => {    // email
-
   try {
     let usrObj = await auth.sendPasswordResetToken(req.body?.email);
+    res.status(usrObj?.statusCode);
+    delete usrObj.statusCode;
     res.send(usrObj);
   } catch (err) {
-    var result = { success: false, error: err };
-    res.send(result);
+    var result = { success: false, error: err.toString() };
+    res.status(500).send(result);
   }
 });
 
@@ -273,7 +274,7 @@ router.post("/forgotPassword", async (req, res) => {    // email
 router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToken, newPassword 
 
   if (!req.body?.resetPswdToken || !req.body?.newPassword) {
-    return res.status(400).json({ message: "All fields are mandatory" });
+    return res.status(400).json({ success: false, message: "All fields are mandatory" });
   }
 
   try {
@@ -308,7 +309,7 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
 
     jwt.verify(resetPswdToken, process.env.SECRET_KEY + selectRes[0].userID, async function (err, decoded) {
       if (err) {
-        return res.send("Cannot reset the password, possibly the link is invalid or expired");
+        return res.status(400).send("Cannot reset the password, possibly the link is invalid or expired");
       }
 
       const encPassword = bcrypt.hashSync(newPassword, bcrypt.genSaltSync(10));
@@ -325,14 +326,14 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
       });
 
       if (updateResult && updateResult?.affectedRows > 0) {
-        return res.json({ success: true, email: decoded?.email });
+        return res.status(200).json({ success: true, email: decoded?.email, message: "Password resert successfully" });
       } else {
         return res.status(500).json({ success: false, message: "Internal server error" });
       }
     });
   } catch (err) {
     var result = { success: false, error: err };
-    res.send(result);
+    res.status(500).send(result);
   }
 });
 

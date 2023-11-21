@@ -118,7 +118,7 @@ const sendPasswordResetToken = async (email) => {
   const { emailErrors, isValidEmail } = validateEmail(email);
 
   if (!isValidEmail) {
-    return { success: false, error: emailErrors };
+    return { success: false, statusCode: 400, error: emailErrors };
   }
 
   try {
@@ -130,14 +130,14 @@ const sendPasswordResetToken = async (email) => {
     const result = await new Promise((resolve, reject) => {
       db.query(selectQuery, email.trim(), (err, data) => {
         if (err) {
-          reject({ success: false, error: err.toString() });
+          reject({ success: false, statusCode: 500, error: err.toString() });
         }
         resolve(data);
       });
     });
 
     if (!result || result.length === 0) {
-      return { success: false, message: "the provided email was not found" };
+      return { success: false, statusCode: 404, message: "the provided email was not found" };
     } else {
       const resetPswdToken = jwt.sign({ email: result[0].email }, process.env.SECRET_KEY + result[0].userID);
       console.log("ResetPswdToken for forgotPassword: ", `${resetPswdToken}`);
@@ -148,7 +148,7 @@ const sendPasswordResetToken = async (email) => {
         // db.query(updateQuery, [resetPswdToken, resetDateTime, result[0].email], (err, data) => {
         db.query(updateQuery, [resetPswdToken, resetDateTime?.toISOString().slice(0, 19).replace('T', ' '), result[0].email], (err, data) => {
           if (err) {
-            reject({ success: false, error: err.toString() });
+            reject({ success: false, statusCode: 500, error: err.toString() });
           }
           resolve(data);
         });
@@ -159,16 +159,16 @@ const sendPasswordResetToken = async (email) => {
         const mailSendRes = await sendMail("forgot_Password_Email_Template", result[0]?.email, resetPswdUrl);
 
         if (mailSendRes?.success === true) {
-          return { isMailSent: true, email: result[0].email, success: true };
+          return { success: true, statusCode: 200, isMailSent: true, message: "The reset password link has been sent to your email address'" };
         } else {
-          return { sucess: true, isMailSent: false, email: result[0].email, success: false };   // error in sending mail
+          return { sucess: false, statusCode: 500, isMailSent: false, message: "Error in sending mail, please try again" };
         }
       } else {
-        return { success: false, error: "Internal Server Error" };
+        return { success: false, statusCode: 500, error: "Internal Server Error" };
       }
     }
   } catch (err) {
-    return { success: false, error: err };
+    return { success: false, statusCode: 500, error: err };
   }
 };
 
