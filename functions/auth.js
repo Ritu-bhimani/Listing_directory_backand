@@ -125,7 +125,7 @@ const sendPasswordResetToken = async (email) => {
     // const resetDateTime = new Date().toISOString();
     const resetDateTime = new Date();
 
-    const selectQuery = "SELECT * FROM users WHERE email = ? limit 1";
+    const selectQuery = "SELECT email, userID FROM users WHERE email = ? limit 1";
 
     const result = await new Promise((resolve, reject) => {
       db.query(selectQuery, email.trim(), (err, data) => {

@@ -27,7 +27,7 @@ router.post("/add", async (req, res) => {    // requird - title, category, descr
     } catch (err) {
         return res.send({ success: false, error: err })
     }
-})
+});
 
 
 router.put("/edit", async (req, res) => {
@@ -57,7 +57,7 @@ router.put("/edit", async (req, res) => {
         return res.send({ success: false, error: err })
     }
 
-})
+});
 
 
 router.put("/remove", async (req, res) => {  // this will only change listing  "isListingExists"  status from  exists to  notExists.  // not delete the record/listing from listing table.       
@@ -70,15 +70,15 @@ router.put("/remove", async (req, res) => {  // this will only change listing  "
 
         if (auth.validated == true) {
             var result = await listing.deleteListing(req.body?.listingID)
-            res.json(result)
+            return res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            return res.json(resmsg)
         }
     }
     catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
 });
 
@@ -87,11 +87,11 @@ router.get("/allListing", async (req, res) => {
     try {
         let listingsData = await listing.getAllListing();
         listingsData.success = true
-        res.send(listingsData);
+        return res.send(listingsData);
     }
     catch (error) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
 });
 
@@ -102,17 +102,17 @@ router.get("/myListing", async (req, res) => {
 
         if (auth.validated == true) {
             let listingsData = await listing.getMyListing(auth.userID);
-            res.send(listingsData);
+            return res.send(listingsData);
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
             return res.send(resmsg)
         }
     }
-    catch (error) {
+    catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
-})
+});
 
 
 router.get("/myFavourites", async (req, res) => {
@@ -121,17 +121,17 @@ router.get("/myFavourites", async (req, res) => {
 
         if (auth.validated == true) {
             let favListingsData = await listing.getMyFavouritesWithDetails(auth.userID);
-            res.send(favListingsData);
+            return res.send(favListingsData);
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
             return res.send(resmsg)
         }
     }
-    catch (error) {
+    catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
-})
+});
 
 
 router.get("/myFavouritesIds", async (req, res) => {
@@ -140,27 +140,48 @@ router.get("/myFavouritesIds", async (req, res) => {
 
         if (auth.validated == true) {
             let favListingsIds = await listing.getMyFavouritesListingsIDs(auth.userID);
-            res.send(favListingsIds);
+            return res.send(favListingsIds);
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
             return res.send(resmsg)
         }
     }
-    catch (error) {
+    catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
-})
+});
+
+
+router.get("/myListingReviews", async (req, res) => {
+
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            // let resObj = await listing.myListingReviews(65);
+            let resObj = await listing.myListingReviews(auth.userID);
+            return res.send(resObj);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err.toString() }
+        return res.send(result)
+    }
+});
 
 
 router.get("/:id", async (req, res) => {            // api/listing/:id
     try {
         let listingID = req.params?.id;
         let result = await listing.getListing(listingID);
-        res.send(result);
+        return res.send(result);
     } catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
 });
 
@@ -176,17 +197,17 @@ router.post("/addToFavourite", async (req, res) => {
 
         if (auth.validated == true) {
             var result = await listing.addToFavourite(auth?.userID, req.body?.listingID)
-            res.json(result)
+            return res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            return res.json(resmsg)
         }
     }
     catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
-})
+});
 
 
 router.put("/removeFromFavourite", async (req, res) => {
@@ -200,17 +221,69 @@ router.put("/removeFromFavourite", async (req, res) => {
 
         if (auth.validated == true) {
             var result = await listing.removeFromFavourite(auth?.userID, req.body?.listingID)
-            res.json(result)
+            return res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            return res.json(resmsg)
         }
     }
     catch (err) {
         var result = { success: false, error: err }
-        res.send(result)
+        return res.send(result)
     }
-})
+});
+
+
+router.post("/:id/review", async (req, res) => {          // user can only able to add one review to every listing
+
+    const { errors, isValid } = await listing.validateAddReviewFields(req.body);
+
+    if (!isValid) {
+        return res.status(400).json({ success: false, error: errors });
+    }
+
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let resObj = await listing.addReview(auth.userID, req.params.id, req.body);
+            return res.send(resObj);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
+
+
+router.put("/:id/review", async (req, res) => {
+
+    const { errors, isValid } = await listing.validateEditReviewFields(req.body);
+
+    if (!isValid) {
+        return res.status(400).json({ success: false, error: errors });
+    }
+
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let resObj = await listing.editReview(auth.userID, req.params.id, req.body);
+            return res.send(resObj);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
 
 
 module.exports = router;

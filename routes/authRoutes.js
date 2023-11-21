@@ -135,7 +135,7 @@ router.get("/verify/:token", async (req, res) => {
       return res.send("Email verification failed, possibly the link is invalid or expired");
     } else {
       // res.send("Email verified successfully");
-      const selectQuery = "SELECT * FROM users WHERE email = ? limit 1";
+      const selectQuery = "SELECT userName FROM users WHERE email = ? limit 1"; // 
 
       const result = await new Promise((resolve, reject) => {
         db.query(selectQuery, decoded?.email, async (err, data) => {
@@ -202,11 +202,10 @@ router.post("/login", async (req, res) => {
       else {
 
         if (result[0]?.isAccountExists == "notExists") {    // account delete kryu hse
-          return res.status(400).json({ error: "User account doesn't exists" });
+          return res.status(404).json({ status: false, message: "User account doesn't exists" });
         }
         else if (result[0]?.verificationStatus == "notVerify") {
 
-          // Create and send the JWT token 
           jwt.sign({ email: result[0]?.email }, process.env.SECRET_KEY, { expiresIn: "10m" }, async (err, token) => {
             if (err) {
               return res.json({ success: false, error: err.toString() });
@@ -228,13 +227,15 @@ router.post("/login", async (req, res) => {
 
             if (mailSendRes.success == true) {
               // if user is not verified then only will send 'isMailSent'. login & signup both ma.
-              return res.json({ ...resObj, isMailSent: true }); // true means  -  message: "Please verify your email address first. A verification email has been sent to your provided email address"    need to show message from frontend
+              return res.status(400).json({ success: false, message: "Go to inbox to first verify your email address", isMailSent: true });
             } else {
-              return res.json({ ...resObj, isMailSent: false });
+              return res.status(400).json({ success: false, message: "Go to inbox to first verify your email address", isMailSent: false });
             }
+
           }
           );
-        } else {
+        }
+        else {
           let retObj = {};
           retObj.success = true;
           retObj.userData = {
@@ -245,14 +246,14 @@ router.post("/login", async (req, res) => {
             verificationStatus: result[0]?.verificationStatus,
           };
           retObj.authToken = await common.jwtSign({ email: result[0]?.email, userID: result[0]?.userID }, process.env.LOGIN_EXPIRATION, process.env.SECRET_KEY);
-          res.json(retObj);
+          res.status(200).json(retObj);
         }
       }
     } else {
-      res.json({ success: false, error: "User does not exists!" });
+      res.status(404).json({ success: false, message: "User does not exists!" });
     }
   } catch (err) {
-    return res.status(500).json({ error: err });
+    return res.status(500).json({ success: false, error: err });
   }
 });
 
