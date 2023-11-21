@@ -235,7 +235,7 @@ const validateChangePswd = (data) => {
     }
 
     if (validator.isEmpty(data.newPassword)) {
-        pswdErrs.password = "newPassword field is required";
+        errors.password = "newPassword field is required";
     } else if (!validator.isLength(data.newPassword, { min: 6, max: 30 })) {
         errors.password = "newPassword must be at least 6 characters long";
     }
