@@ -48,39 +48,48 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
     }
 
     try {
-        const { email, oldPassword, newPassword, confirmPassword } = req.body;
+        const auth = common.validAuthHeader(req);
 
-        const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
+        if (auth.validated == true) {
+    
+            const { email, oldPassword, newPassword, confirmPassword } = req.body;
 
-        const result = await new Promise((resolve, reject) => {
-            db.query(query, email, (err, data) => {
-                if (err) {
-                    reject({ success: false, error: err.toString() });
+            const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
+
+            const result = await new Promise((resolve, reject) => {
+                db.query(query, email, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
                 }
-                resolve(data);
+                );
+            });
+
+            if (result && result?.length > 0) {
+
+                const isPasswordMatch = bcrypt.compareSync(oldPassword, result[0]?.password);
+                const isNewPswdOldPswdMatch = bcrypt.compareSync(newPassword, result[0]?.password);
+
+                if (isPasswordMatch == false) {
+                    return res.status(400).json({ success: false, message: "Incorrect old password" })
+                }
+
+                if (isNewPswdOldPswdMatch == true) {
+                    return res.status(400).json({ success: false, message: "Old password and New password are same" })
+                }
+
+                let retVal = await user.changePassword(result[0]?.userID, newPassword)
+                return res.json(retVal)
+
             }
-            );
-        });
-
-        if (result && result?.length > 0) {
-
-            const isPasswordMatch = bcrypt.compareSync(oldPassword, result[0]?.password);
-            const isNewPswdOldPswdMatch = bcrypt.compareSync(newPassword, result[0]?.password);
-
-            if (isPasswordMatch == false) {
-                return res.status(400).json({ success: false, message: "Incorrect old password" })
+            else {
+                res.status(404).json({ success: false, message: "Email not found" });
             }
-
-            if (isNewPswdOldPswdMatch == true) {
-                return res.status(400).json({ success: false, message: "Old password and New password are same" })
-            }
-
-            let retVal = await user.changePassword(result[0]?.userID, newPassword)
-            return res.json(retVal)
-
         }
         else {
-            res.status(404).json({ success: false, message: "Email not found" });
+            let resmsg = { success: false, message: "Failed auth validation" }
+            res.send(resmsg)
         }
 
     } catch (err) {
