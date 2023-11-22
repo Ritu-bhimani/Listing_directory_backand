@@ -52,7 +52,7 @@ router.post("/signup", async (req, res) => {
         error.userName = "Username address already in use";
       }
 
-      return res.status(400).json(error);
+      return res.status(400).json({ success: false, error });
     } else {
       const insertQuery =
         "INSERT INTO users (userID,userName, email, password, role, registerDateTime, firstName, lastName, phone, bio, socialNetworks, resetPasswordDateTime, resetPasswordToken, isAccountExists, verificationStatus, address, updateDateTime, profileImage, favourites) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -198,12 +198,12 @@ router.post("/login", async (req, res) => {
       const isPasswordMatch = bcrypt.compareSync(suppliedPassword, storedPassword);
 
       if (!isPasswordMatch) {
-        return res.status(400).json({ success: false, error: "Incorrect password" });
+        return res.status(400).json({ success: false, message: "Incorrect password" });
       }
       else {
 
         if (result[0]?.isAccountExists == "notExists") {    // account delete kryu hse
-          return res.status(404).json({ status: false, message: "User account doesn't exists" });
+          return res.status(404).json({ success: false, message: "User account doesn't exists" });
         }
         else if (result[0]?.verificationStatus == "notVerify") {
 
