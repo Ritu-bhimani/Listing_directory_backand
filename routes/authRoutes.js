@@ -246,7 +246,7 @@ router.post("/login", async (req, res) => {
             isAccountExists: result[0]?.isAccountExists,
             verificationStatus: result[0]?.verificationStatus,
           };
-          retObj.authToken = await common.jwtSign({ email: result[0]?.email, userID: result[0]?.userID }, process.env.LOGIN_EXPIRATION, process.env.SECRET_KEY);
+          retObj.authToken = await common.jwtSign({ email: result[0]?.email, userID: result[0]?.userID, role: result[0]?.role }, process.env.LOGIN_EXPIRATION, process.env.SECRET_KEY);
           res.status(200).json(retObj);
         }
       }

@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
             return res.send(resmsg);
         } else {
             let resmsg = { success: false, message: "Failed auth validation" }
-            res.send(resmsg)
+            res.status(401).send(resmsg)
         }
     } catch (err) {
         return res.json({ success: false, error: err })
@@ -89,7 +89,7 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
         }
         else {
             let resmsg = { success: false, message: "Failed auth validation" }
-            res.send(resmsg)
+            res.status(401).send(resmsg)
         }
 
     } catch (err) {
@@ -114,7 +114,7 @@ router.put("/updateUser", async (req, res) => {
             res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            res.status(401).json(resmsg)
         }
     }
     catch (err) {
@@ -143,7 +143,7 @@ router.put("/updateUserSocial", async (req, res) => {         // if you don't pa
             res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            res.status(401).json(resmsg)
         }
     }
     catch (err) {
@@ -194,7 +194,7 @@ router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req
 
         } else {
             var resmsg = { success: false, message: "Failed auth validation" };
-            return res.json(resmsg);
+            return res.status(401).json(resmsg);
         }
 
     } catch (err) {
@@ -215,7 +215,7 @@ router.put("/removeProfileImage", async (req, res) => {
             res.send(resmsg);
         } else {
             var resmsg = { success: false, message: "Failed auth validation" };
-            res.send(resmsg);
+            res.status(401).send(resmsg);
         }
     } catch (err) {
         var result = { success: false, error: err };
@@ -233,7 +233,7 @@ router.put("/deleteUserAccount", async (req, res) => {        // this will only 
             res.json(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            res.json(resmsg)
+            res.status(401).json(resmsg)
         }
     }
     catch (err) {

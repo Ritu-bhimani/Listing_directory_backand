@@ -522,6 +522,10 @@ let addReview = async (userID, listingID, data) => {
             return { success: false, message: 'listingID is invalid' }
         }
 
+        if (listingData[0].userID == userID) {
+            return { success: false, message: "You can't add review to your owned listing" }
+        }
+
         const listingReviews = JSON.parse(listingData?.[0]?.reviews || []);
 
         const alreadyReviewed = listingReviews.find((review) => review?.userID.toString() == userID.toString());
@@ -709,6 +713,35 @@ const myListingReviews = async (ownerID) => {
 }
 
 
+// const myGivenReviews = async (userID) => {
+
+//     try {
+//         const query = "SELECT listingID, JSON_EXTRACT(reviews, '$[*].userName') AS userNames, JSON_EXTRACT(reviews, '$[*].reviewID') as reviewIDs FROM listing WHERE userID != AND ?"
+
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(
+//                 query, [userID], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (result && result?.length > 0) {
+//             const res = result.filter((listing) => {
+//                 return listing
+//             })
+//         }
+
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+//     return { success: true, message: "myGivenReviews" }
+// }
+
 module.exports = {
     addListing,
     validateAddListingFields,
@@ -727,5 +760,6 @@ module.exports = {
     validateAddReviewFields,
     editReview,
     validateEditReviewFields,
-    myListingReviews
+    myListingReviews,
+    // myGivenReviews
 };

@@ -18,7 +18,7 @@ router.post("/add", async (req, res) => {  //  cityName
             return res.send(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            return res.send(resmsg)
+            return res.status(401).send(resmsg)
         }
     }
     catch (err) {
@@ -44,7 +44,7 @@ router.put("/edit", async (req, res) => {
             return res.send(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            return res.send(resmsg)
+            return res.status(401).send(resmsg)
         }
     }
     catch (err) {
@@ -69,7 +69,7 @@ router.delete("/remove", async (req, res) => {
             return res.send(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            return res.send(resmsg)
+            return res.status(401).send(resmsg)
         }
     }
     catch (err) {
@@ -94,7 +94,7 @@ router.get("/", async (req, res) => {
             return res.send(result)
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
-            return res.send(resmsg)
+            return res.status(401).send(resmsg)
         }
     }
     catch (err) {
