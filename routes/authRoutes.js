@@ -91,7 +91,7 @@ router.post("/signup", async (req, res) => {
             }
 
             // Create and send the JWT token
-            jwt.sign({ email: reqUserData.email }, process.env.SECRET_KEY, { expiresIn: "10m" }, async (err, token) => {
+            jwt.sign({ email: reqUserData.email }, process.env.SECRET_KEY, { expiresIn: process.env.NEW_USER_REGISTRATION_LINK_EXPIRATION }, async (err, token) => {
               if (err) {
                 return res.json({ success: false, err: err.toString() });
               }
@@ -206,7 +206,7 @@ router.post("/login", async (req, res) => {
         }
         else if (result[0]?.verificationStatus == "notVerify") {
 
-          jwt.sign({ email: result[0]?.email }, process.env.SECRET_KEY, { expiresIn: "10m" }, async (err, token) => {
+          jwt.sign({ email: result[0]?.email }, process.env.SECRET_KEY, { expiresIn: process.env.NEW_USER_REGISTRATION_LINK_EXPIRATION }, async (err, token) => {
             if (err) {
               return res.json({ success: false, error: err.toString() });
             }

@@ -139,7 +139,7 @@ const sendPasswordResetToken = async (email) => {
     if (!result || result.length === 0) {
       return { success: false, statusCode: 404, message: "the provided email was not found" };
     } else {
-      const resetPswdToken = jwt.sign({ email: result[0].email }, process.env.SECRET_KEY + result[0].userID);
+      const resetPswdToken = jwt.sign({ email: result[0].email }, process.env.SECRET_KEY + result[0].userID, { expiresIn: process.env.RESET_PSWD_TOKEN_EXP_MIN });
       console.log("ResetPswdToken for forgotPassword: ", `${resetPswdToken}`);
 
       const updateQuery = "UPDATE users SET resetPasswordToken = ?, resetPasswordDateTime = ? WHERE email = ?";

@@ -14,14 +14,14 @@ const sendMail = async (templateName, email, verificationUrl) => {
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'vaibhav.specscale@gmail.com',
-        pass: 'btwtfowownkmtdvt'
+        user: process.env.GMAIL_FROM_ADDRESS,
+        pass: process.env.GMAIL_PASSWORD
       }
     });
 
     // Define the email options
     let mailOptions = {
-      from: 'vaibhav.specscale@gmail.com',
+      from: process.env.GMAIL_FROM_ADDRESS,
       to: `${email}`,
       // subject:templateName === 'password_Reset_Template' ? ' Password Change Confirmation: Action Required for Your Account' :templateName === 'registration_Confirm_Email_Template' ? 'Your Directory and Listing account – Please complete your registration': templateName === 'verify_Email_Template' ? 'Your Directory and Listing account – Registration successful' :templateName === 'pw_Successfully_Changed_Template' ? 'Your Directory and Listing account – Password changed' :'',
       subject:templateName === 'password_Reset_Template' ? ' Password Change Confirmation: Action Required for Your Account' :templateName === 'registration_Confirm_Email_Template' ? 'Your Directory and Listing account – Please complete your registration': templateName === 'verify_Email_Template' ? 'Your Directory and Listing account – Registration successful' :templateName === 'pw_Successfully_Changed_Template' ? 'Your Directory and Listing account – Password changed' : templateName === 'forgot_Password_Email_Template' ? 'Password Reset - Expires in 10 min.' : '',
