@@ -110,9 +110,10 @@ router.post("/signup", async (req, res) => {
               };
 
               if (mailSendRes?.success == true) {
-                return res.json({ ...resObj, isMailSent: true, success: true }); // Note: true means  -  message: "A verification email has been sent to your provided email address"    need to show message from frontend
+                return res.json({ success: true, isMailSent: true, message: "Go to your inbox to verify your email address", ...resObj }); // Note: true means  -  message: "A verification email has been sent to your provided email address"    need to show message from frontend
               } else {
-                return res.json({ ...resObj, isMailSent: false, success: true });
+                // return res.status(500).json({ success: false, isMailSent: false, message: "Error in sending verification mail" });
+                return res.json({ success: true, isMailSent: false, message: "Registration Successful, you will get verification mail when you loggin" });
               }
             }
             );
@@ -122,7 +123,7 @@ router.post("/signup", async (req, res) => {
     }
   } catch (err) {
     var resmsg = { success: false, err: err };
-    return res.json(resmsg);
+    return res.status(500).json(resmsg);
   }
 });
 
@@ -309,7 +310,7 @@ router.post("/resetForgottenPassword", async (req, res) => {    // resetPswdToke
 
     jwt.verify(resetPswdToken, process.env.SECRET_KEY + selectRes[0].userID, async function (err, decoded) {
       if (err) {
-        return res.status(400).send("Cannot reset the password, possibly the link is invalid or expired");
+        return res.status(400).send({ success: false, message: "Cannot reset the password, possibly the link is invalid or expired" });
       }
 
       const encPassword = bcrypt.hashSync(newPassword, bcrypt.genSaltSync(10));
