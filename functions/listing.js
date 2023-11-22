@@ -508,6 +508,75 @@ const validateListingRemainFields = async (data) => {
     return errors
 }
 
+// previous
+// let addReview = async (userID, listingID, data) => {
+
+//     try {
+//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
+//         if (!userData) {
+//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
+//         }
+
+//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
+//         if (!listingData?.length > 0) {
+//             return { success: false, message: 'listingID is invalid' }
+//         }
+
+//         if (listingData[0].userID == userID) {
+//             return { success: false, message: "You can't add review to your owned listing" }
+//         }
+
+//         const listingReviews = JSON.parse(listingData?.[0]?.reviews || []);
+
+//         const alreadyReviewed = listingReviews.find((review) => review?.userID.toString() == userID.toString());
+
+//         if (alreadyReviewed) {
+//             return { success: false, message: "listing alredy reviewed" };
+//         }
+
+//         const reviewID = uuidv4();
+//         const date = new Date();
+//         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
+//         const reviewObj = {
+//             userName: userData?.userName,
+//             userID: userID,
+//             rating: Number(data.rating),
+//             comment: data?.comment?.trim() || "",
+//             reviewID: reviewID,
+//             createTime: createTime,
+//             updateTime: null
+//         };
+
+//         listingReviews.push(reviewObj);
+
+//         const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
+
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
+//                 (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (result && result?.affectedRows > 0) {
+//             // return { success: true, message: "Review added." };
+//             return { success: true, reviewID: reviewID };
+//         } else if (result && result?.affectedRows == 0) {
+//             return { success: false, message: "listingID is invalid" };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
 
 let addReview = async (userID, listingID, data) => {
 
@@ -518,7 +587,7 @@ let addReview = async (userID, listingID, data) => {
         }
 
         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
-        if (!listingData?.length > 0) {
+        if (!(listingData?.length > 0)) {
             return { success: false, message: 'listingID is invalid' }
         }
 
@@ -526,34 +595,28 @@ let addReview = async (userID, listingID, data) => {
             return { success: false, message: "You can't add review to your owned listing" }
         }
 
-        const listingReviews = JSON.parse(listingData?.[0]?.reviews || []);
+        const selectReviewQuery = "SELECT * FROM reviews WHERE userID = ? AND listingID = ? limit 1";
 
-        const alreadyReviewed = listingReviews.find((review) => review?.userID.toString() == userID.toString());
+        const selResult = await new Promise((resolve, reject) => {
+            db.query(selectReviewQuery, [userID, listingID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
 
-        if (alreadyReviewed) {
-            return { success: false, message: "listing alredy reviewed" };
+        if (selResult && selResult?.length > 0) {
+            return { success: false, message: "Listing alredy reviewed" }
         }
 
-        const reviewID = uuidv4();
         const date = new Date();
         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
-
-        const reviewObj = {
-            userName: userData?.userName,
-            userID: userID,
-            rating: Number(data.rating),
-            comment: data?.comment?.trim() || "",
-            reviewID: reviewID,
-            createTime: createTime,
-            updateTime: null
-        };
-
-        listingReviews.push(reviewObj);
-
-        const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
+        const insertQuery = "INSERT INTO reviews (reviewID, userID, listingID, rating, comment, userName, createTime, updateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
 
         const result = await new Promise((resolve, reject) => {
-            db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
+            db.query(insertQuery, [userID, listingID, Number(data.rating), data?.comment || null, userData?.userName, createTime],
                 (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
@@ -564,8 +627,7 @@ let addReview = async (userID, listingID, data) => {
         });
 
         if (result && result?.affectedRows > 0) {
-            // return { success: true, message: "Review added." };
-            return { success: true, reviewID: reviewID };
+            return { success: true, message: "Review added" };
         } else if (result && result?.affectedRows == 0) {
             return { success: false, message: "listingID is invalid" };
         }
@@ -598,7 +660,6 @@ const validateAddReviewFields = async (data) => {
 }
 
 let editReview = async (userID, listingID, data) => {
-
     try {
         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
         if (!userData) {
@@ -606,7 +667,7 @@ let editReview = async (userID, listingID, data) => {
         }
 
         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
-        if (!listingData?.length > 0) {
+        if (!(listingData?.length > 0)) {
             return { success: false, message: 'listingID is invalid' }
         }
 

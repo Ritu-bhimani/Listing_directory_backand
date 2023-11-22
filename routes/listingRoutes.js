@@ -252,6 +252,32 @@ router.put("/removeFromFavourite", async (req, res) => {
     }
 });
 
+// previous
+// router.post("/:id/review", async (req, res) => {          // user can only able to add one review to every listing of someone
+
+//     const { errors, isValid } = await listing.validateAddReviewFields(req.body);
+
+//     if (!isValid) {
+//         return res.status(400).json({ success: false, error: errors });
+//     }
+
+//     try {
+//         var auth = common.validAuthHeader(req)
+
+//         if (auth.validated == true) {
+//             let resObj = await listing.addReview(auth.userID, req.params.id, req.body);
+//             return res.send(resObj);
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" }
+//             return res.status(401).send(resmsg)
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return res.send(result)
+//     }
+// });
+
 
 router.post("/:id/review", async (req, res) => {          // user can only able to add one review to every listing of someone
 
