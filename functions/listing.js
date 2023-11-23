@@ -486,10 +486,10 @@ const validateListingRemainFields = async (data) => {
     let errors = {}
 
     // if ((data?.address || data?.address === "") && typeof data.address !== "object") {       // if user pass address: "" then also it will check validation
-    if (data.hasOwnProperty("address") && typeof data.address !== "object" || Array.isArray(data.address) ) {
+    if (data.hasOwnProperty("address") && typeof data.address !== "object" || Array.isArray(data.address)) {
         errors.address = "Address field must be an object";
     }
-    if (data.hasOwnProperty("price") && typeof data.price !== "object" || Array.isArray(data.price) ) {
+    if (data.hasOwnProperty("price") && typeof data.price !== "object" || Array.isArray(data.price)) {
         errors.price = "Price field must be an object";
     }
     if (data.hasOwnProperty("businessHours") && !Array.isArray(data.businessHours)) {
@@ -595,15 +595,15 @@ let addReview = async (userID, listingID, data) => {
             return { success: false, message: "You can't add review to your owned listing" }
         }
 
-        const selectReviewQuery = "SELECT * FROM reviews WHERE userID = ? AND listingID = ? limit 1";
+        const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND rwListingID = ? limit 1";
 
         const selResult = await new Promise((resolve, reject) => {
             db.query(selectReviewQuery, [userID, listingID], (err, data) => {
-                    if (err) {
-                        reject({ success: false, error: err.toString() });
-                    }
-                    resolve(data);
+                if (err) {
+                    reject({ success: false, error: err.toString() });
                 }
+                resolve(data);
+            }
             );
         });
 
@@ -613,7 +613,7 @@ let addReview = async (userID, listingID, data) => {
 
         const date = new Date();
         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
-        const insertQuery = "INSERT INTO reviews (reviewID, userID, listingID, rating, comment, userName, createTime, updateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
+        const insertQuery = "INSERT INTO reviews (reviewID, rwUserID, rwListingID, rating, rwComment, rwUserName, rwCreateTime, rwUpdateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
 
         const result = await new Promise((resolve, reject) => {
             db.query(insertQuery, [userID, listingID, Number(data.rating), data?.comment || null, userData?.userName, createTime],
@@ -659,6 +659,73 @@ const validateAddReviewFields = async (data) => {
     };
 }
 
+// previous
+// let editReview = async (userID, listingID, data) => {
+//     try {
+//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
+//         if (!userData) {
+//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
+//         }
+
+//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
+//         if (!(listingData?.length > 0)) {
+//             return { success: false, message: 'listingID is invalid' }
+//         }
+
+//         const listingReviews = JSON.parse(listingData?.[0]?.reviews);
+
+//         // const existingReviewIndex = listingReviews.findIndex((review) => review?.userID.toString() === userID.toString());         //  alos works, bcz user can only able to add one review to every listing
+//         const existingReviewIndex = listingReviews.findIndex((review) => review?.reviewID.toString() === data?.reviewID.toString());
+
+//         if (existingReviewIndex == -1) {
+//             return { success: false, message: "review doesn't found" };
+//         }
+
+//         const existingReview = listingReviews[existingReviewIndex];
+
+//         const date = new Date();
+//         const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
+//         const updatedReviewObj = {
+//             userName: userData?.userName,
+//             userID: userID,
+//             rating: Number(data.rating),
+//             comment: data?.comment?.trim() || "",
+//             reviewID: data.reviewID,
+//             createTime: existingReview.createTime,
+//             updateTime: updateTime
+//         };
+
+//         listingReviews?.splice(existingReviewIndex, 1, updatedReviewObj)
+
+//         const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
+
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
+//                 (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (result && result?.affectedRows > 0) {
+//             // return { success: true, message: "Review updated." };
+//             return { success: true };
+//         } else if (result && result?.affectedRows == 0) {
+//             return { success: false, message: "listingID is invalid" };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err.toString() }
+//     }
+// }
+
 let editReview = async (userID, listingID, data) => {
     try {
         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
@@ -671,36 +738,34 @@ let editReview = async (userID, listingID, data) => {
             return { success: false, message: 'listingID is invalid' }
         }
 
-        const listingReviews = JSON.parse(listingData?.[0]?.reviews);
+        const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND reviewID = ? limit 1";
+        
+        const reviewDataRes = await new Promise((resolve, reject) => {
+            db.query(selectReviewQuery, [userID, data.reviewID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
 
-        // const existingReviewIndex = listingReviews.findIndex((review) => review?.userID.toString() === userID.toString());         //  alos works, bcz user can only able to add one review to every listing
-        const existingReviewIndex = listingReviews.findIndex((review) => review?.reviewID.toString() === data?.reviewID.toString());
-
-        if (existingReviewIndex == -1) {
-            return { success: false, message: "review doesn't found" };
+        if (reviewDataRes && !(reviewDataRes?.length > 0)) {
+            return { success: false, message: "Review doesn't found" }
         }
 
-        const existingReview = listingReviews[existingReviewIndex];
-
+        const reviewData = reviewDataRes[0];
         const date = new Date();
         const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
 
-        const updatedReviewObj = {
-            userName: userData?.userName,
-            userID: userID,
-            rating: Number(data.rating),
-            comment: data?.comment?.trim() || "",
-            reviewID: data.reviewID,
-            createTime: existingReview.createTime,
-            updateTime: updateTime
-        };
+        reviewData.rating = data?.rating ? data.rating : reviewData.rating;
+        reviewData.rwComment = data?.comment ? data.comment : reviewData.rwComment;
+        reviewData.rwUpdateTime = updateTime;
 
-        listingReviews?.splice(existingReviewIndex, 1, updatedReviewObj)
+        const updateQuery = "UPDATE reviews SET rating = ?, rwComment = ?, rwUpdateTime = ? WHERE reviewID = ? AND rwUserID = ?";
 
-        const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
-
-        const result = await new Promise((resolve, reject) => {
-            db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
+        const updateResult = await new Promise((resolve, reject) => {
+            db.query(updateQuery, [reviewData.rating, reviewData.rwComment, reviewData.rwUpdateTime, data.reviewID, userID],
                 (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
@@ -710,18 +775,17 @@ let editReview = async (userID, listingID, data) => {
             );
         });
 
-        if (result && result?.affectedRows > 0) {
-            // return { success: true, message: "Review updated." };
-            return { success: true };
-        } else if (result && result?.affectedRows == 0) {
-            return { success: false, message: "listingID is invalid" };
+        if (updateResult && updateResult?.affectedRows > 0) {
+            return { success: true, message: "Review updated" };
+        } else if (updateResult && updateResult?.affectedRows == 0) {
+            return { success: false, message: "reviewID is invalid" };
         }
         else {
             return { success: false, message: "Internal Server Error" };
         }
 
     } catch (err) {
-        return { success: false, error: err.toString() }
+        return { success: false, error: err }
     }
 }
 

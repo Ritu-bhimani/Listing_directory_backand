@@ -278,7 +278,6 @@ router.put("/removeFromFavourite", async (req, res) => {
 //     }
 // });
 
-
 router.post("/:id/review", async (req, res) => {          // user can only able to add one review to every listing of someone
 
     const { errors, isValid } = await listing.validateAddReviewFields(req.body);
@@ -304,6 +303,31 @@ router.post("/:id/review", async (req, res) => {          // user can only able 
     }
 });
 
+// previous
+// router.put("/:id/review", async (req, res) => {
+
+//     const { errors, isValid } = await listing.validateEditReviewFields(req.body);
+
+//     if (!isValid) {
+//         return res.status(400).json({ success: false, error: errors });
+//     }
+
+//     try {
+//         var auth = common.validAuthHeader(req)
+
+//         if (auth.validated == true) {
+//             let resObj = await listing.editReview(auth.userID, req.params.id, req.body);
+//             return res.send(resObj);
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" }
+//             return res.status(401).send(resmsg)
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return res.send(result)
+//     }
+// });
 
 router.put("/:id/review", async (req, res) => {
 
@@ -325,6 +349,7 @@ router.put("/:id/review", async (req, res) => {
         }
     }
     catch (err) {
+        console.log("/:id/  edit review catch err", err)
         var result = { success: false, error: err }
         return res.send(result)
     }
