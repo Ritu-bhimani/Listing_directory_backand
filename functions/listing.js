@@ -312,6 +312,7 @@ const deleteListing = async (listingID) => {     // this will only change user  
     }
 }
 
+// previous
 const getAllListing = async () => {
     try {
         const query = "SELECT * FROM listing";
@@ -336,6 +337,56 @@ const getAllListing = async () => {
     }
 }
 
+// changed according to new listing, review tables
+// const getAllListing = async () => {
+//     try {
+//         // const query = "SELECT li.listingID, li.title, r.* FROM listing AS li LEFT JOIN reviews AS r ON li.listingID = r.rwListingID ";
+//         // const query = `SELECT li.listingID, li.title, r.* As ABC FROM listing AS li LEFT JOIN reviews AS r ON li.listingID = r.rwListingID where r.rwListingID = li.listingID`;
+
+//         const reviewQuery = "SELECT * FROM reviews ORDER BY rwListingID ASC";
+//         const listingQuery = "SELECT * FROM listing ORDER BY listingID ASC";
+
+//         const reviewsResult = await new Promise((resolve, reject) => {
+//             db.query(reviewQuery, (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         const listingsResult = await new Promise((resolve, reject) => {
+//             db.query(listingQuery, (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         const combineRecords = listingsResult?.map((listing) => {
+//             const currListing = listing;
+//             currListing.reviews = [];
+//             reviewsResult.forEach((currReview) => {
+//                 if (listing.listingID == currReview.rwListingID) {
+//                     currListing.reviews.push(currReview);
+//                 }
+//             })
+//             return currListing;
+//         })
+
+//         if (combineRecords && combineRecords?.length > 0) {
+//             return { success: true, data: combineRecords };
+//         } else {
+//             return { success: false, message: "No listings found" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
+
+// previous
 const getMyListing = async (ownerID) => {
     try {
         const query = "SELECT * FROM listing WHERE userID = ?";
@@ -360,6 +411,54 @@ const getMyListing = async (ownerID) => {
     }
 }
 
+// changed according to new listing, review tables
+// const getMyListing = async (ownerID) => {
+//     try {
+//         const reviewQuery = "SELECT * FROM reviews WHERE rwListingID IN (SELECT listingID FROM listing WHERE userID = ?)";
+//         const listingQuery = "SELECT * FROM listing WHERE userID = ? ORDER BY listingID ASC";
+
+//         const reviewsResult = await new Promise((resolve, reject) => {
+//             db.query(reviewQuery, [ownerID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         const listingsResult = await new Promise((resolve, reject) => {
+//             db.query(listingQuery, [ownerID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         // combine reviews to belonging listing 
+//         const combineRecords = listingsResult?.map((listing) => {
+//             const currListing = listing;
+//             currListing.reviews = [];
+//             reviewsResult.forEach((currReview) => {
+//                 if (listing.listingID == currReview.rwListingID) {
+//                     currListing.reviews.push(currReview);
+//                 }
+//             })
+//             return currListing;
+//         })
+
+//         if (combineRecords && combineRecords?.length > 0) {
+//             return { success: true, data: combineRecords };
+//         } else {
+//             return { success: false, message: "No listings found" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
+
+// previous
 const getListing = async (listingID) => {
     try {
         const query = "SELECT * FROM listing WHERE listingID = ?";
@@ -384,6 +483,58 @@ const getListing = async (listingID) => {
         return { success: false, error: err }
     }
 }
+
+// changed according to new listing, review tables
+// const getListing = async (listingID) => {
+//     try {
+//         const listingQuery = "SELECT * FROM listing WHERE listingID = ? limit 1";
+//         const listingResult = await new Promise((resolve, reject) => {
+//             db.query(
+//                 listingQuery, listingID, (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (!listingResult || !(listingResult?.length > 0)) {
+//             return { success: false, message: "listing ID is invalid" };
+//         }
+
+//         // get reviews of particular listingID
+//         const reviewQuery = "SELECT * FROM reviews WHERE rwListingID = ? ORDER BY reviewID";
+//         const reviewsResult = await new Promise((resolve, reject) => {
+//             db.query(reviewQuery, [listingID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         const combineRecords = listingResult?.map((listing) => {
+//             const currListing = listing;
+//             currListing.reviews = [];
+//             reviewsResult.forEach((currReview) => {
+//                 if (listing.listingID == currReview.rwListingID) {
+//                     currListing.reviews.push(currReview);
+//                 }
+//             })
+//             return currListing;
+//         })
+
+//         if (combineRecords && combineRecords?.length > 0) {
+//             return { success: true, data: combineRecords };
+//         } else {
+//             return { success: false, message: "listing ID is invalid" };
+//         }
+
+//     } catch (error) {
+//         return { success: false, error: err }
+//     }
+// }
 
 const addToFavourite = async (userID, listingID) => {
     try {
@@ -450,6 +601,7 @@ const addToFavourite = async (userID, listingID) => {
 
 const removeFromFavourite = async (userID, listingID) => {
     try {
+        // get user's favourite listings ids
         const selectQuery = "SELECT favourites FROM users WHERE userID = ? limit 1";
         const selectRes = await new Promise((resolve, reject) => {
             db.query(selectQuery, userID, (err, data) => {
@@ -464,8 +616,9 @@ const removeFromFavourite = async (userID, listingID) => {
         let userFavourites = [];
         userFavourites = JSON.parse(selectRes[0]?.favourites);
 
-        userFavourites = userFavourites.filter(listingId => listingId !== listingID)
+        userFavourites = userFavourites.filter(listingId => listingId !== listingID)     // removed listingID from favourites
 
+        // update user favourites
         const updateQuery = "UPDATE users SET favourites = ? WHERE userID = ?";
         const updateRes = await new Promise((resolve, reject) => {
             db.query(
@@ -489,6 +642,7 @@ const removeFromFavourite = async (userID, listingID) => {
     }
 }
 
+// previous
 const getMyFavouritesWithDetails = async (userID) => {
     try {
         const query = "SELECT li.* FROM users AS u INNER JOIN listing AS li ON u.userID = li.userID WHERE u.userID = ? AND JSON_CONTAINS(u.favourites, li.listingID)";
@@ -506,13 +660,85 @@ const getMyFavouritesWithDetails = async (userID) => {
         if (selectRes && selectRes?.length > 0) {
             return { success: true, data: selectRes };
         } else {
-            return { success: false, message: "No favourite listings found" };     //  favourites will be empty []  
+            return { success: false, message: "No favourite listings found" };     //  favourites will be empty []
         }
 
     } catch (err) {
         return { success: false, error: err }
     }
 }
+
+// changed according to new listing, review tables
+// const getMyFavouritesWithDetails = async (userID) => {
+
+//     try {
+//         // get user favourite listings ids
+//         const favIdsQuery = "SELECT favourites FROM users WHERE USERid = ?";
+//         const favIdsRes = await new Promise((resolve, reject) => {
+//             db.query(favIdsQuery, [userID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             }
+//             );
+//         });
+
+//         const favIdsArray = JSON.parse(favIdsRes?.[0]?.favourites);
+
+//         if (!favIdsArray || !(favIdsArray?.length > 0)) {
+//             return { success: false, message: "No favourite listings found" };
+//         }
+
+//         const placeholders = favIdsArray.map(() => "?").join(",");
+
+//         // get user's favourite listings details 
+//         const favLisitngsQuery = `SELECT li.*
+//                                 FROM users AS u
+//                                 INNER JOIN listing AS li ON u.userID = li.userID
+//                                 WHERE li.listingID IN (${placeholders})`;
+
+//         const favListingResult = await new Promise((resolve, reject) => {
+//             db.query(favLisitngsQuery, [...favIdsArray], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         // get user's favourite listings reviews 
+//         const reviewQuery = `SELECT * FROM reviews WHERE rwListingID IN (${placeholders})`;
+//         const reviewsResult = await new Promise((resolve, reject) => {
+//             db.query(reviewQuery, [...favIdsArray], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         const combineRecords = favListingResult?.map((listing) => {
+//             const currListing = listing;
+//             currListing.reviews = [];
+//             reviewsResult.forEach((currReview) => {
+//                 if (listing.listingID == currReview.rwListingID) {
+//                     currListing.reviews.push(currReview);
+//                 }
+//             })
+//             return currListing;
+//         })
+
+//         if (combineRecords && combineRecords?.length > 0) {
+//             return { success: true, data: combineRecords };
+//         } else {
+//             return { success: false, message: "No listings found" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
 
 const getMyFavouritesListingsIDs = async (userID) => {
     try {
@@ -566,75 +792,6 @@ const validateListingRemainFields = async (data) => {
 }
 
 // previous
-// let addReview = async (userID, listingID, data) => {
-
-//     try {
-//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
-//         if (!userData) {
-//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
-//         }
-
-//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
-//         if (!listingData?.length > 0) {
-//             return { success: false, message: 'listingID is invalid' }
-//         }
-
-//         if (listingData[0].userID == userID) {
-//             return { success: false, message: "You can't add review to your owned listing" }
-//         }
-
-//         const listingReviews = JSON.parse(listingData?.[0]?.reviews || []);
-
-//         const alreadyReviewed = listingReviews.find((review) => review?.userID.toString() == userID.toString());
-
-//         if (alreadyReviewed) {
-//             return { success: false, message: "listing alredy reviewed" };
-//         }
-
-//         const reviewID = uuidv4();
-//         const date = new Date();
-//         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
-
-//         const reviewObj = {
-//             userName: userData?.userName,
-//             userID: userID,
-//             rating: Number(data.rating),
-//             comment: data?.comment?.trim() || "",
-//             reviewID: reviewID,
-//             createTime: createTime,
-//             updateTime: null
-//         };
-
-//         listingReviews.push(reviewObj);
-
-//         const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
-
-//         const result = await new Promise((resolve, reject) => {
-//             db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
-//                 (err, data) => {
-//                     if (err) {
-//                         reject({ success: false, error: err.toString() });
-//                     }
-//                     resolve(data);
-//                 }
-//             );
-//         });
-
-//         if (result && result?.affectedRows > 0) {
-//             // return { success: true, message: "Review added." };
-//             return { success: true, reviewID: reviewID };
-//         } else if (result && result?.affectedRows == 0) {
-//             return { success: false, message: "listingID is invalid" };
-//         }
-//         else {
-//             return { success: false, message: "Internal Server Error" };
-//         }
-
-//     } catch (err) {
-//         return { success: false, error: err }
-//     }
-// }
-
 let addReview = async (userID, listingID, data) => {
 
     try {
@@ -644,7 +801,7 @@ let addReview = async (userID, listingID, data) => {
         }
 
         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
-        if (!(listingData?.length > 0)) {
+        if (!listingData?.length > 0) {
             return { success: false, message: 'listingID is invalid' }
         }
 
@@ -652,28 +809,34 @@ let addReview = async (userID, listingID, data) => {
             return { success: false, message: "You can't add review to your owned listing" }
         }
 
-        const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND rwListingID = ? limit 1";
+        const listingReviews = JSON.parse(listingData?.[0]?.reviews || []);
 
-        const selResult = await new Promise((resolve, reject) => {
-            db.query(selectReviewQuery, [userID, listingID], (err, data) => {
-                if (err) {
-                    reject({ success: false, error: err.toString() });
-                }
-                resolve(data);
-            }
-            );
-        });
+        const alreadyReviewed = listingReviews.find((review) => review?.userID.toString() == userID.toString());
 
-        if (selResult && selResult?.length > 0) {
-            return { success: false, message: "Listing alredy reviewed" }
+        if (alreadyReviewed) {
+            return { success: false, message: "listing alredy reviewed" };
         }
 
+        const reviewID = uuidv4();
         const date = new Date();
         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
-        const insertQuery = "INSERT INTO reviews (reviewID, rwUserID, rwListingID, rating, rwComment, rwUserName, rwCreateTime, rwUpdateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
+
+        const reviewObj = {
+            userName: userData?.userName,
+            userID: userID,
+            rating: Number(data.rating),
+            comment: data?.comment?.trim() || "",
+            reviewID: reviewID,
+            createTime: createTime,
+            updateTime: null
+        };
+
+        listingReviews.push(reviewObj);
+
+        const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
 
         const result = await new Promise((resolve, reject) => {
-            db.query(insertQuery, [userID, listingID, Number(data.rating), data?.comment || null, userData?.userName, createTime],
+            db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
                 (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
@@ -684,7 +847,8 @@ let addReview = async (userID, listingID, data) => {
         });
 
         if (result && result?.affectedRows > 0) {
-            return { success: true, message: "Review added" };
+            // return { success: true, message: "Review added." };
+            return { success: true, reviewID: reviewID };
         } else if (result && result?.affectedRows == 0) {
             return { success: false, message: "listingID is invalid" };
         }
@@ -696,6 +860,69 @@ let addReview = async (userID, listingID, data) => {
         return { success: false, error: err }
     }
 }
+
+// changed according to new listing, review tables
+// let addReview = async (userID, listingID, data) => {
+//     try {
+//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
+//         if (!userData) {
+//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
+//         }
+
+//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
+//         if (!(listingData?.length > 0)) {
+//             return { success: false, message: 'listingID is invalid' }
+//         }
+
+//         if (listingData[0].userID == userID) {
+//             return { success: false, message: "You can't add review to your owned listing" }
+//         }
+
+//         // checking user has already review added or not in particular listing
+//         const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND rwListingID = ? limit 1";
+//         const selResult = await new Promise((resolve, reject) => {
+//             db.query(selectReviewQuery, [userID, listingID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             }
+//             );
+//         });
+
+//         if (selResult && selResult?.length > 0) {
+//             return { success: false, message: "Listing alredy reviewed" }
+//         }
+
+//         const date = new Date();
+//         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
+        
+//         // adding review
+//         const insertQuery = "INSERT INTO reviews (reviewID, rwUserID, rwListingID, rating, rwComment, rwUserName, rwCreateTime, rwUpdateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(insertQuery, [userID, listingID, Number(data.rating), data?.comment || null, userData?.userName, createTime],
+//                 (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (result && result?.affectedRows > 0) {
+//             return { success: true, message: "Review added" };
+//         } else if (result && result?.affectedRows == 0) {
+//             return { success: false, message: "listingID is invalid" };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
 
 const validateAddReviewFields = async (data) => {
     let errors = {};
@@ -717,72 +944,6 @@ const validateAddReviewFields = async (data) => {
 }
 
 // previous
-// let editReview = async (userID, listingID, data) => {
-//     try {
-//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
-//         if (!userData) {
-//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
-//         }
-
-//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
-//         if (!(listingData?.length > 0)) {
-//             return { success: false, message: 'listingID is invalid' }
-//         }
-
-//         const listingReviews = JSON.parse(listingData?.[0]?.reviews);
-
-//         // const existingReviewIndex = listingReviews.findIndex((review) => review?.userID.toString() === userID.toString());         //  alos works, bcz user can only able to add one review to every listing
-//         const existingReviewIndex = listingReviews.findIndex((review) => review?.reviewID.toString() === data?.reviewID.toString());
-
-//         if (existingReviewIndex == -1) {
-//             return { success: false, message: "review doesn't found" };
-//         }
-
-//         const existingReview = listingReviews[existingReviewIndex];
-
-//         const date = new Date();
-//         const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
-
-//         const updatedReviewObj = {
-//             userName: userData?.userName,
-//             userID: userID,
-//             rating: Number(data.rating),
-//             comment: data?.comment?.trim() || "",
-//             reviewID: data.reviewID,
-//             createTime: existingReview.createTime,
-//             updateTime: updateTime
-//         };
-
-//         listingReviews?.splice(existingReviewIndex, 1, updatedReviewObj)
-
-//         const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
-
-//         const result = await new Promise((resolve, reject) => {
-//             db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
-//                 (err, data) => {
-//                     if (err) {
-//                         reject({ success: false, error: err.toString() });
-//                     }
-//                     resolve(data);
-//                 }
-//             );
-//         });
-
-//         if (result && result?.affectedRows > 0) {
-//             // return { success: true, message: "Review updated." };
-//             return { success: true };
-//         } else if (result && result?.affectedRows == 0) {
-//             return { success: false, message: "listingID is invalid" };
-//         }
-//         else {
-//             return { success: false, message: "Internal Server Error" };
-//         }
-
-//     } catch (err) {
-//         return { success: false, error: err.toString() }
-//     }
-// }
-
 let editReview = async (userID, listingID, data) => {
     try {
         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
@@ -795,34 +956,36 @@ let editReview = async (userID, listingID, data) => {
             return { success: false, message: 'listingID is invalid' }
         }
 
-        const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND reviewID = ? limit 1";
-        
-        const reviewDataRes = await new Promise((resolve, reject) => {
-            db.query(selectReviewQuery, [userID, data.reviewID], (err, data) => {
-                if (err) {
-                    reject({ success: false, error: err.toString() });
-                }
-                resolve(data);
-            }
-            );
-        });
+        const listingReviews = JSON.parse(listingData?.[0]?.reviews);
 
-        if (reviewDataRes && !(reviewDataRes?.length > 0)) {
-            return { success: false, message: "Review doesn't found" }
+        // const existingReviewIndex = listingReviews.findIndex((review) => review?.userID.toString() === userID.toString());         //  alos works, bcz user can only able to add one review to every listing
+        const existingReviewIndex = listingReviews.findIndex((review) => review?.reviewID.toString() === data?.reviewID.toString());
+
+        if (existingReviewIndex == -1) {
+            return { success: false, message: "review doesn't found" };
         }
 
-        const reviewData = reviewDataRes[0];
+        const existingReview = listingReviews[existingReviewIndex];
+
         const date = new Date();
         const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
 
-        reviewData.rating = data?.rating ? data.rating : reviewData.rating;
-        reviewData.rwComment = data?.comment ? data.comment : reviewData.rwComment;
-        reviewData.rwUpdateTime = updateTime;
+        const updatedReviewObj = {
+            userName: userData?.userName,
+            userID: userID,
+            rating: Number(data.rating),
+            comment: data?.comment?.trim() || "",
+            reviewID: data.reviewID,
+            createTime: existingReview.createTime,
+            updateTime: updateTime
+        };
 
-        const updateQuery = "UPDATE reviews SET rating = ?, rwComment = ?, rwUpdateTime = ? WHERE reviewID = ? AND rwUserID = ?";
+        listingReviews?.splice(existingReviewIndex, 1, updatedReviewObj)
 
-        const updateResult = await new Promise((resolve, reject) => {
-            db.query(updateQuery, [reviewData.rating, reviewData.rwComment, reviewData.rwUpdateTime, data.reviewID, userID],
+        const updateQuery = "UPDATE listing SET reviews = ? WHERE listingID = ? ";
+
+        const result = await new Promise((resolve, reject) => {
+            db.query(updateQuery, [JSON.stringify(listingReviews), listingID],
                 (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
@@ -832,19 +995,84 @@ let editReview = async (userID, listingID, data) => {
             );
         });
 
-        if (updateResult && updateResult?.affectedRows > 0) {
-            return { success: true, message: "Review updated" };
-        } else if (updateResult && updateResult?.affectedRows == 0) {
-            return { success: false, message: "reviewID is invalid" };
+        if (result && result?.affectedRows > 0) {
+            // return { success: true, message: "Review updated." };
+            return { success: true };
+        } else if (result && result?.affectedRows == 0) {
+            return { success: false, message: "listingID is invalid" };
         }
         else {
             return { success: false, message: "Internal Server Error" };
         }
 
     } catch (err) {
-        return { success: false, error: err }
+        return { success: false, error: err.toString() }
     }
 }
+
+//  changed according to new listing, review tables
+// let editReview = async (userID, listingID, data) => {
+//     try {
+//         const userData = await user.getUserByUserID(userID);          // invalid userID then undefined userData
+//         if (!userData) {
+//             return { success: false, message: 'userID is invalid' }   // user doesn't exists
+//         }
+
+//         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
+//         if (!(listingData?.length > 0)) {
+//             return { success: false, message: 'listingID is invalid' }
+//         }
+
+//         // checking user has previously review added or not
+//         const selectReviewQuery = "SELECT * FROM reviews WHERE rwUserID = ? AND reviewID = ? limit 1";
+//         const reviewDataRes = await new Promise((resolve, reject) => {
+//             db.query(selectReviewQuery, [userID, data.reviewID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             }
+//             );
+//         });
+
+//         if (reviewDataRes && !(reviewDataRes?.length > 0)) {
+//             return { success: false, message: "Review doesn't found" }
+//         }
+
+//         const reviewData = reviewDataRes[0];
+//         const date = new Date();
+//         const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
+//         reviewData.rating = data?.rating ? data.rating : reviewData.rating;
+//         reviewData.rwComment = data?.comment ? data.comment : reviewData.rwComment;
+//         reviewData.rwUpdateTime = updateTime;
+
+//         // updating review
+//         const updateQuery = "UPDATE reviews SET rating = ?, rwComment = ?, rwUpdateTime = ? WHERE reviewID = ? AND rwUserID = ?";
+//         const updateResult = await new Promise((resolve, reject) => {
+//             db.query(updateQuery, [reviewData.rating, reviewData.rwComment, reviewData.rwUpdateTime, data.reviewID, userID],
+//                 (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (updateResult && updateResult?.affectedRows > 0) {
+//             return { success: true, message: "Review updated" };
+//         } else if (updateResult && updateResult?.affectedRows == 0) {
+//             return { success: false, message: "reviewID is invalid" };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
 
 const validateEditReviewFields = async (data) => {
     let errors = {};
@@ -869,7 +1097,7 @@ const validateEditReviewFields = async (data) => {
     };
 }
 
-
+// previous
 const myListingReviews = async (ownerID) => {
     try {
         const query = "SELECT listingID, reviews FROM listing WHERE userID = ?";
@@ -894,15 +1122,15 @@ const myListingReviews = async (ownerID) => {
     }
 }
 
-
-// const myGivenReviews = async (userID) => {
-
+// changed according to new listing, review tables
+// const myListingReviews = async (ownerID) => {
 //     try {
-//         const query = "SELECT listingID, JSON_EXTRACT(reviews, '$[*].userName') AS userNames, JSON_EXTRACT(reviews, '$[*].reviewID') as reviewIDs FROM listing WHERE userID != AND ?"
 
-//         const result = await new Promise((resolve, reject) => {
+//         // get user owned listings ids
+//         const listingQuery = `SELECT listingID FROM listing WHERE userID = ? `;
+//         const listingResult = await new Promise((resolve, reject) => {
 //             db.query(
-//                 query, [userID], (err, data) => {
+//                 listingQuery, ownerID, (err, data) => {
 //                     if (err) {
 //                         reject({ success: false, error: err.toString() });
 //                     }
@@ -911,18 +1139,64 @@ const myListingReviews = async (ownerID) => {
 //             );
 //         });
 
-//         if (result && result?.length > 0) {
-//             const res = result.filter((listing) => {
-//                 return listing
-//             })
+//         if (!listingResult || !(listingResult?.length > 0)) {            // user has no listing
+//             return { success: false, message: "No listings found" };
 //         }
 
+//         const myListingIds = listingResult?.map((listing) => listing.listingID);
+//         const placeholders = myListingIds.map(() => "?").join(",");
+
+//         // get reviews related to user's all listing
+//         const reviewsQuery = `SELECT rwListingID AS listingID, reviewID, rwUserID, rating, rwComment, rwUserName, rwCreateTime, rwUpdateTime FROM reviews WHERE rwListingID IN (${placeholders})`;
+//         const reviewsResult = await new Promise((resolve, reject) => {
+//             db.query(
+//                 reviewsQuery, [...myListingIds], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (reviewsResult && reviewsResult?.length > 0) {
+//             return { success: true, data: reviewsResult };
+//         } else {
+//             return { success: false, message: "No reviews found" };
+//         }
 
 //     } catch (err) {
 //         return { success: false, error: err }
 //     }
-//     return { success: true, message: "myGivenReviews" }
 // }
+
+
+// changed according to new listing, review tables
+const myGivenReviews = async (userID) => {
+    try {
+        const query = "SELECT rwListingID As listingID, reviewID, rating, rwComment, rwCreateTime, rwUpdateTime from reviews WHERE rwUserID = ?";
+        const result = await new Promise((resolve, reject) => {
+            db.query(
+                query, [userID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        if (result && result?.length > 0) {
+            return { success: true, data: result }
+        } else {
+            return { success: false, message: "No reviews found" }
+        }
+
+    } catch (err) {
+        console.log("catch err", err)
+        return { success: false, error: err }
+    }
+}
 
 module.exports = {
     addListing,
@@ -943,5 +1217,5 @@ module.exports = {
     editReview,
     validateEditReviewFields,
     myListingReviews,
-    // myGivenReviews
+    myGivenReviews
 };
