@@ -69,7 +69,7 @@ let addListing = async (data) => {   // requird - title, category, description
 
 //     try {
 //         const insertQuery =
-//             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, updateDateTime, isListingExists) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+//             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, updateDateTime, isListingExists, approveTime, rejectTime, tagline) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
 
 //         const date = new Date();
 
@@ -97,7 +97,10 @@ let addListing = async (data) => {   // requird - title, category, description
 //                     "Pending",                  // listingStatus  enum('Approved', 'Canceled', 'Pending')
 //                     date.toISOString().slice(0, 19).replace('T', ' '),   // postedDateTime       // new Date().toISOString(),   // postedDateTime
 //                     null,                         //  updateDateTime
-//                     "exists"                     //  isListingExists
+//                     "exists",                     //  isListingExists
+//                     null,                         //  approveTime
+//                     null,                         //  rejectTime
+//                     data?.tagline || null         //  tagline    
 //                 ],
 //                 (err, data) => {
 //                     if (err) {
@@ -173,6 +176,7 @@ const editListing = async (data) => {
         listingData.keywords = data?.keywords ? data.keywords : data?.keywords == "" ? null : listingData.keywords;
         listingData.bsVideoUrl = data?.bsVideoUrl ? data.bsVideoUrl : data.bsVideoUrl == "" ? null : listingData.bsVideoUrl;
         listingData.bsLogo = data?.bsLogo ? data.bsLogo : data?.bsLogo == "" ? null : listingData.bsLogo;
+        listingData.tagline = data?.tagline ? data.tagline : data?.tagline == "" ? null : listingData.tagline;
 
         listingData.businessHours = data?.businessHours ? data.businessHours : listingData.businessHours;
         listingData.price = data?.price ? data.price : listingData.price;
@@ -183,9 +187,9 @@ const editListing = async (data) => {
         // listingData.updateDateTime = new Date().toISOString();
         listingData.updateDateTime = date.toISOString().slice(0, 19).replace('T', ' ')
 
-        // listingStatus, reviews, postedDateTime, isListingExists - user can't change
+        // listingStatus, reviews, postedDateTime, isListingExists, approveTime, rejectTime - user can't change
 
-        const updateQuery = "UPDATE listing SET title = ?, address = ?, listingCityID = ?, phone = ?, website = ?, categoryID =?, price = ?, businessHours = ?, socialMedia = ?, faqs = ?, description = ?, keywords = ?, bsVideoUrl = ?, bsImages = ?, bsLogo = ?, updateDateTime = ? WHERE listingID = ? ";
+        const updateQuery = "UPDATE listing SET title = ?, address = ?, listingCityID = ?, phone = ?, website = ?, categoryID =?, price = ?, businessHours = ?, socialMedia = ?, faqs = ?, description = ?, keywords = ?, bsVideoUrl = ?, bsImages = ?, bsLogo = ?, updateDateTime = ?, tagline = ? WHERE listingID = ? ";
 
         const result = await new Promise((resolve, reject) => {
             db.query(updateQuery,
@@ -206,7 +210,8 @@ const editListing = async (data) => {
                     JSON.stringify(listingData.bsImages),
                     listingData.bsLogo,
                     listingData.updateDateTime,
-                    listingData.listingID
+                    listingData.listingID,
+                    listingData.tagline
                 ],
                 (err, data) => {
                     if (err) {
@@ -896,7 +901,7 @@ let addReview = async (userID, listingID, data) => {
 
 //         const date = new Date();
 //         const createTime = date.toISOString().slice(0, 19).replace('T', ' ');
-        
+
 //         // adding review
 //         const insertQuery = "INSERT INTO reviews (reviewID, rwUserID, rwListingID, rating, rwComment, rwUserName, rwCreateTime, rwUpdateTime) values(null, ?, ?, ?, ?, ?, ?, null)";
 //         const result = await new Promise((resolve, reject) => {
@@ -1198,6 +1203,90 @@ const myGivenReviews = async (userID) => {
     }
 }
 
+const getListingFilterWise = async (data) => {
+
+    let query;
+    let queryParams;
+
+    if (data?.city && data?.category) {
+        query = "SELECT * from listing WHERE categoryID = ? AND listingCityID = ?";
+        queryParams = [data.category, data.city];
+    }
+
+    else if (data?.category) {
+        query = "SELECT * from listing WHERE categoryID = ?";
+        queryParams = [data.category];
+    }
+
+    else if (data?.city) {
+        query = "SELECT * from listing WHERE listingCityID = ?";
+        queryParams = [data.city];
+    }
+
+    try {
+        const result = await new Promise((resolve, reject) => {
+            db.query(
+                query, queryParams, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        return { success: true, data: result }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return result
+    }
+}
+
+const getListingCategoryrWise = async (data) => {
+    try {
+        let query = "SELECT * from listing WHERE categoryID = ?";
+        const result = await new Promise((resolve, reject) => {
+            db.query(
+                query, data.category, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        return { success: true, data: result }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return result
+    }
+}
+
+const getListingCityWise = async (data) => {
+    try {
+        let query = "SELECT * from listing WHERE listingCityID = ?";
+        const result = await new Promise((resolve, reject) => {
+            db.query(
+                query, data.city, (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
+
+        return { success: true, data: result }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return result
+    }
+}
+
 module.exports = {
     addListing,
     validateAddListingFields,
@@ -1217,5 +1306,8 @@ module.exports = {
     editReview,
     validateEditReviewFields,
     myListingReviews,
-    myGivenReviews
+    myGivenReviews,
+    getListingFilterWise,
+    getListingCategoryrWise,
+    getListingCityWise
 };

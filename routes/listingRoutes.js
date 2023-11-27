@@ -192,6 +192,53 @@ router.get("/myGivenReviews", async (req, res) => {
     }
 });
 
+router.get("/filter", async (req, res) => {
+
+    if (!req.body) {
+        return res.send({ success: false, message: "city or category required" });
+    }
+
+    try {
+        let result = await listing.getListingFilterWise(req.body)
+        return res.json(result)
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.json(result)
+    }
+});
+
+router.get("/categoryfilter", async (req, res) => { 
+
+    if (!req.body.category) {
+        return res.send({ success: false, message: "category field required" });
+    }
+
+    try {
+        let result = await listing.getListingCategoryWise(req.body)
+        return res.json(result)
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.json(result)
+    }
+});
+
+router.get("/cityfilter", async (req, res) => {  
+
+    if (!req.body.city) {
+        return res.send({ success: false, message: "city field required" });
+    }
+
+    try {
+        let result = await listing.getListingCityWise(req.body)
+        return res.json(result)
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.json(result)
+    }
+});
 
 router.get("/:id", async (req, res) => {            // api/listing/:id
     try {
