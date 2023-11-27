@@ -1,7 +1,7 @@
 const express = require("express");
 const city = require("../functions/city.js");
 const common = require("../functions/common.js");
-
+const { jwtDecode } = require('jwt-decode');
 const router = express.Router();
 
 router.post("/add", async (req, res) => {  //  cityName
@@ -14,8 +14,15 @@ router.post("/add", async (req, res) => {  //  cityName
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
-            var result = await city.addCity(req.body)
-            return res.send(result)
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
+            var result = await city.addCity(req.body);
+            return res.send(result);
+
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
             return res.status(401).send(resmsg)
@@ -40,6 +47,12 @@ router.put("/edit", async (req, res) => {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
             var result = await city.editCity(req.body)
             return res.send(result)
         } else {
@@ -65,6 +78,12 @@ router.delete("/remove", async (req, res) => {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
             var result = await city.deleteCity(req.body)
             return res.send(result)
         } else {

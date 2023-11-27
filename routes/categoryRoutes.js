@@ -14,6 +14,12 @@ router.post("/add", async (req, res) => {  //  categoryName
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+            
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
             var result = await category.addCategory(req.body)
             return res.send(result)
         } else {
@@ -40,6 +46,12 @@ router.put("/edit", async (req, res) => {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
             var result = await category.editCategory(req.body)
             return res.send(result)
         } else {
@@ -65,6 +77,12 @@ router.delete("/remove", async (req, res) => {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
             var result = await category.deleteCategory(req.body)
             return res.send(result)
         } else {
