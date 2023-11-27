@@ -206,15 +206,15 @@ const delteUserAccount = async (userID) => {     // this will only change user  
         });
 
         if (result && result?.affectedRows > 0) {
-            // const updateListingStatusQuery = "UPDATE listing SET isListingExists = ? WHERE userID = ? ";
-            // const result = await new Promise((resolve, reject) => {
-            //     db.query(updateListingStatusQuery, ["notExists", userID], (err, data) => {
-            //         if (err) {
-            //             reject({ success: false, error: err.toString() });
-            //         }
-            //         resolve(data);
-            //     });
-            // });
+            const updateListingStatusQuery = "UPDATE listing SET isListingExist = ? WHERE userID = ? ";
+            const result = await new Promise((resolve, reject) => {
+                db.query(updateListingStatusQuery, ["notExists", userID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                });
+            });
             return { success: true }
         } else {
             return { success: false, message: "Internal server error" }
