@@ -194,8 +194,10 @@ router.get("/myGivenReviews", async (req, res) => {
 
 router.get("/filter", async (req, res) => {
 
-    if (!req.body) {
-        return res.send({ success: false, message: "city or category required" });
+    const { category, city } = req.body;
+
+    if (!category && !city) {
+        return res.status(400).send({ success: false, message: "city or category field required" });
     }
 
     try {
@@ -208,7 +210,7 @@ router.get("/filter", async (req, res) => {
     }
 });
 
-router.get("/categoryfilter", async (req, res) => { 
+router.get("/categoryfilter", async (req, res) => {
 
     if (!req.body.category) {
         return res.send({ success: false, message: "category field required" });
@@ -224,7 +226,7 @@ router.get("/categoryfilter", async (req, res) => {
     }
 });
 
-router.get("/cityfilter", async (req, res) => {  
+router.get("/cityfilter", async (req, res) => {
 
     if (!req.body.city) {
         return res.send({ success: false, message: "city field required" });

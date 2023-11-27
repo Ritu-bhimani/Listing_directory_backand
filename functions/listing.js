@@ -1204,9 +1204,8 @@ const myGivenReviews = async (userID) => {
 }
 
 const getListingFilterWise = async (data) => {
-
     let query;
-    let queryParams;
+    let queryParams = [];
 
     if (data?.city && data?.category) {
         query = "SELECT * from listing WHERE categoryID = ? AND listingCityID = ?";
@@ -1226,7 +1225,7 @@ const getListingFilterWise = async (data) => {
     try {
         const result = await new Promise((resolve, reject) => {
             db.query(
-                query, queryParams, (err, data) => {
+                query, [...queryParams], (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -1243,7 +1242,7 @@ const getListingFilterWise = async (data) => {
     }
 }
 
-const getListingCategoryrWise = async (data) => {
+const getListingCategoryWise = async (data) => {
     try {
         let query = "SELECT * from listing WHERE categoryID = ?";
         const result = await new Promise((resolve, reject) => {
@@ -1308,6 +1307,6 @@ module.exports = {
     myListingReviews,
     myGivenReviews,
     getListingFilterWise,
-    getListingCategoryrWise,
+    getListingCategoryWise,
     getListingCityWise
 };
