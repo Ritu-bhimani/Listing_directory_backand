@@ -210,8 +210,8 @@ const editListing = async (data) => {
                     JSON.stringify(listingData.bsImages),
                     listingData.bsLogo,
                     listingData.updateDateTime,
+                    listingData.tagline,
                     listingData.listingID,
-                    listingData.tagline
                 ],
                 (err, data) => {
                     if (err) {
