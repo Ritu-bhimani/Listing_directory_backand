@@ -1285,108 +1285,108 @@ const getListingCityWise = async (data) => {
     }
 }
 
-// const statusChange = async (listingID, listingStatus) => {
-//     try {
-//         const selecteQuery = `SELECT * FROM listing WHERE listingID = ? `;
-//         const listingResult = await new Promise((resolve, reject) => {
-//             db.query(
-//                 selecteQuery, [listingID], (err, data) => {
-//                     if (err) {
-//                         reject({ success: false, error: err.toString() });
-//                     }
-//                     resolve(data);
-//                 }
-//             );
-//         });
+const statusChange = async (listingID, listingStatus) => {
+    try {
+        const selecteQuery = `SELECT * FROM listing WHERE listingID = ? `;
+        const listingResult = await new Promise((resolve, reject) => {
+            db.query(
+                selecteQuery, [listingID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
 
-//         if (listingResult && !(listingResult.length > 0)) {
-//             return { success: false, message: "listingID is invalid" };
-//         }
+        if (listingResult && !(listingResult.length > 0)) {
+            return { success: false, message: "listingID is invalid" };
+        }
 
-//         if (listingResult[0].listingStatus == "Approved") {
-//             return { success: true, message: "listing already approved" };
-//         }
+        if (listingResult[0].listingStatus == "Approved") {
+            return { success: true, message: "listing already approved" };
+        }
 
-//         let query;
-//         let date = new Date();
-//         date = date.toISOString().slice(0, 19).replace('T', ' ')
+        let query;
+        let date = new Date();
+        date = date.toISOString().slice(0, 19).replace('T', ' ')
 
-//         if (listingStatus == "Approved") {
-//             query = "UPDATE listing SET approveTime = ? WHERE listingID = ? ";
-//             // query = "UPDATE listing SET approveTime = ?, rejectTime = null WHERE listingID = ? ";
-//         } else {
-//             query = "UPDATE listing SET rejectTime = ? WHERE listingID = ? ";
-//             // query = "UPDATE listing SET rejectTime = ?, approveTime = null WHERE listingID = ? ";
-//         }
+        if (listingStatus == "Approved") {
+            query = `UPDATE listing SET approveTime = ?, listingStatus = "Approved" WHERE listingID = ? `;
+            // query = "UPDATE listing SET approveTime = ?, rejectTime = null WHERE listingID = ? ";
+        } else {
+            query = `UPDATE listing SET rejectTime = ?, listingStatus = "Rejected" WHERE listingID = ? `;
+            // query = "UPDATE listing SET rejectTime = ?, approveTime = null WHERE listingID = ? ";
+        }
 
-//         const updateResult = await new Promise((resolve, reject) => {
-//             db.query(
-//                 query, [date, listingID], (err, data) => {
-//                     if (err) {
-//                         reject({ success: false, error: err.toString() });
-//                     }
-//                     resolve(data);
-//                 }
-//             );
-//         });
+        const updateResult = await new Promise((resolve, reject) => {
+            db.query(
+                query, [date, listingID], (err, data) => {
+                    if (err) {
+                        reject({ success: false, error: err.toString() });
+                    }
+                    resolve(data);
+                }
+            );
+        });
 
-//         if (updateResult && updateResult?.affectedRows > 0) {
-//             return { success: true, message: listingStatus == "Approved" ? 'Listing approved' : 'Listing rejected' };
-//         } else if (updateResult && updateResult?.affectedRows == 0) {
-//             return { success: false, message: "listingID is invalid" };
-//         }
-//         else {
-//             return { success: false, message: "Internal Server Error" };
-//         }
-//     }
-//     catch (err) {
-//         var result = { success: false, error: err }
-//         return result
-//     }
-// }
+        if (updateResult && updateResult?.affectedRows > 0) {
+            return { success: true, message: listingStatus == "Approved" ? 'Listing approved' : 'Listing rejected' };
+        } else if (updateResult && updateResult?.affectedRows == 0) {
+            return { success: false, message: "listingID is invalid" };
+        }
+        else {
+            return { success: false, message: "Internal Server Error" };
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return result
+    }
+}
 
-// const validateListingStatusChangeFields = async (data) => {
-//     let errors = {};
+const validateListingStatusChangeFields = async (data) => {
+    let errors = {};
 
-//     if (!data.hasOwnProperty("listingID") || validator.isEmpty(data.listingID.toString())) {
-//         errors.listingID = "listingID field is required";
-//     }
+    if (!data.hasOwnProperty("listingID") || validator.isEmpty(data.listingID.toString())) {
+        errors.listingID = "listingID field is required";
+    }
 
-//     const validateStatus = ["Approved", "Rejected"];
+    const validateStatus = ["Approved", "Rejected"];
 
-//     if (!data.hasOwnProperty("listingStatus") || validator.isEmpty(data.listingStatus.toString())) {
-//         errors.listingStatus = "listingStatus field is required";
-//     }
-//     else if (data.hasOwnProperty("listingStatus") && !(validateStatus.includes(data.listingStatus))) {
-//         errors.listingStatus = "listingStatus value must be 'Approved' or 'Rejected'";
-//     }
+    if (!data.hasOwnProperty("listingStatus") || validator.isEmpty(data.listingStatus.toString())) {
+        errors.listingStatus = "listingStatus field is required";
+    }
+    else if (data.hasOwnProperty("listingStatus") && !(validateStatus.includes(data.listingStatus))) {
+        errors.listingStatus = "listingStatus value must be 'Approved' or 'Rejected'";
+    }
 
-//     return {
-//         errors,
-//         isValid: isEmpty(errors),
-//     };
-// }
+    return {
+        errors,
+        isValid: isEmpty(errors),
+    };
+}
 
-// const numOfListingInEachCategory = async () => {
-//     try {
-//         const query = `SELECT c.categoryID, c.categoryName, count(li.categoryID) As count FROM category AS c LEFT JOIN listing AS li  ON c.categoryID = li.categoryID GROUP BY c.categoryID`;
+const numOfListingInEachCategory = async () => {
+    try {
+        const query = `SELECT c.categoryID, c.categoryName, count(li.categoryID) As count FROM category AS c LEFT JOIN listing AS li  ON c.categoryID = li.categoryID GROUP BY c.categoryID`;
 
-//         const selectRes = await new Promise((resolve, reject) => {
-//             db.query(query, (err, data) => {
-//                 if (err) {
-//                     reject({ success: false, error: err.toString() });
-//                 }
-//                 resolve(data);
-//             }
-//             );
-//         });
+        const selectRes = await new Promise((resolve, reject) => {
+            db.query(query, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            }
+            );
+        });
 
-//         return { success: true, data: selectRes };
+        return { success: true, data: selectRes };
 
-//     } catch (err) {
-//         return { success: false, error: err }
-//     }
-// }
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
 
 module.exports = {
     addListing,
@@ -1411,7 +1411,7 @@ module.exports = {
     getListingFilterWise,
     getListingCategoryWise,
     getListingCityWise,
-    // statusChange,
-    // validateListingStatusChangeFields,
-    // numOfListingInEachCategory
+    statusChange,
+    validateListingStatusChangeFields,
+    numOfListingInEachCategory,
 };
