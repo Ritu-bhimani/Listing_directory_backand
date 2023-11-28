@@ -292,6 +292,24 @@ const getUserPublicInfo = async (userNameOrId) => {
 
 };
 
+// const allUserDetails = async () => {
+//     try {
+//         const query = `SELECT userID, userName, email, verificationStatus, role, firstName, lastName, phone, bio, socialNetworks, address, profileImage, registerDateTime, resetPasswordDateTime, isAccountExists, favourites, updateDateTime As profileUpdateTime FROM users WHERE role !="Admin"`;
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(query, (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+//         return { success: true, data: result };
+
+//     } catch (error) {
+//         return { success: false, error: err }
+//     }
+// };
+
 
 const authenticateEmail = async (email, password) => {
     try {
@@ -336,5 +354,6 @@ module.exports = {
     removeProfileImage,
     delteUserAccount,
     validateChangePswd,
-    getUserPublicInfo
+    getUserPublicInfo,
+    // allUserDetails
 }

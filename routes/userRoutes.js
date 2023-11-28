@@ -5,6 +5,7 @@ const user = require("../functions/user.js");
 const db = require("../config/dbConfig.js");
 const fs = require('fs');
 const path = require('path');
+const { jwtDecode } = require('jwt-decode');
 const { uploadImg, uploadProfileImage } = require("../functions/upload.js")
 
 
@@ -254,6 +255,32 @@ router.get("/getUserPublicInfo", async (req, res) => {      // api/user/getUserP
         res.send(result)
     }
 });
+
+
+// router.get("/allUser", async (req, res) => {
+//     try {
+//         var auth = common.validAuthHeader(req)
+
+//         if (auth.validated == true) {
+//             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+//             if (payloadData.role !== "admin") {
+//                 return res.status(403).send({ success: false, message: "Unauthorized access" });
+//             }
+
+//             var result = await user.allUserDetails();
+//             res.json(result);
+
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" }
+//             res.status(401).json(resmsg)
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         res.send(result)
+//     }
+// });
 
 
 module.exports = router;

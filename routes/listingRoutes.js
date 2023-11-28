@@ -1,6 +1,7 @@
 const express = require("express");
 const common = require("../functions/common.js");
 const listing = require("../functions/listing.js");
+const { jwtDecode } = require('jwt-decode');
 
 const router = express.Router();
 
@@ -352,5 +353,62 @@ router.put("/:id/review", async (req, res) => {
     }
 });
 
+
+// router.put("/statusChange", async (req, res) => {
+
+//     const { errors, isValid } = await listing.validateListingStatusChangeFields(req.body);
+
+//     if (!isValid) {
+//         return res.status(400).json({ success: false, error: errors });
+//     }
+
+//     try {
+//         var auth = common.validAuthHeader(req)
+
+//         if (auth.validated == true) {
+//             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+//             if (payloadData.role !== "admin") {
+//                 return res.status(403).send({ success: false, message: "Unauthorized access" });
+//             }
+
+//             let resObj = await listing.statusChange(req.body.listingID, req.body.listingStatus);
+//             return res.send(resObj);
+
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" }
+//             return res.status(401).send(resmsg)
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return res.send(result)
+//     }
+// });
+
+// router.put("/numOfListingInEachCategory", async (req, res) => {
+//     try {
+//         var auth = common.validAuthHeader(req)
+
+//         if (auth.validated == true) {
+//             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+//             if (payloadData.role !== "admin") {
+//                 return res.status(403).send({ success: false, message: "Unauthorized access" });
+//             }
+
+//             let resObj = await listing.numOfListingInEachCategory();
+//             return res.send(resObj);
+
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" }
+//             return res.status(401).send(resmsg)
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return res.send(result)
+//     }
+// });
 
 module.exports = router;
