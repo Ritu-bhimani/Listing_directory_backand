@@ -156,7 +156,8 @@ const sendPasswordResetToken = async (email) => {
 
       if (updateResult && updateResult?.affectedRows > 0) {
         // const resetPswdUrl = `${process.env.BASE_URL}/forgot-password/${resetPswdToken}`; // need to add/create this route in frontend or change base path in backend
-        const resetPswdUrl = `http://localhost:3000/reset-password/${resetPswdToken}`;
+        // const resetPswdUrl = `http://localhost:3000/reset-password/${resetPswdToken}`;
+        const resetPswdUrl = `${process.env.FRONTEND_RESET_PSWD_PAGE_URL}/${resetPswdToken}`;
         const mailSendRes = await sendMail("forgot_Password_Email_Template", result[0]?.email, resetPswdUrl);
 
         if (mailSendRes?.success === true) {
