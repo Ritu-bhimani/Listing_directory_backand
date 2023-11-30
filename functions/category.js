@@ -80,7 +80,6 @@ const editCategory = async (data) => {
     }
 }
 
-
 const deleteCategory = async (data) => {
     try {
         const query = "DELETE FROM category WHERE categoryID = ? ";
@@ -137,7 +136,6 @@ const getCategoryDetail = async (categoryID) => {
     }
 }
 
-
 const validateEditCategory = (data) => {
     let errors = {};
 
@@ -158,10 +156,30 @@ const validateEditCategory = (data) => {
     };
 }
 
+const getAllCategory = async () => {
+    try {
+        const query = "SELECT categoryID,categoryName from category";
+
+        const result = await new Promise((resolve, reject) => {
+            db.query(query, (err, resData) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(resData);
+            });
+        });
+        return { success: true, data: result };
+
+    } catch (err) {
+        return { success: false, err: err };
+    }
+}
+
 module.exports = {
     addCategory,
     editCategory,
     deleteCategory,
     getCategoryDetail,
-    validateEditCategory
+    validateEditCategory,
+    getAllCategory
 };

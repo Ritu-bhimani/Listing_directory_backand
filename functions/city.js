@@ -76,7 +76,6 @@ const editCity = async (data) => {
     }
 }
 
-
 const deleteCity = async (data) => {
     try {
         const query = "DELETE FROM city WHERE cityID = ? ";
@@ -132,7 +131,6 @@ const getCityDetail = async (cityID) => {
     }
 }
 
-
 const validateEditCity = (data) => {
     let errors = {};
 
@@ -153,10 +151,30 @@ const validateEditCity = (data) => {
     };
 }
 
+const getAllCity = async () => {
+    try {
+        const query = "SELECT cityID,cityName from city";
+
+        const result = await new Promise((resolve, reject) => {
+            db.query(query, (err, resData) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(resData);
+            });
+        });
+        return { success: true, data: result };
+
+    } catch (err) {
+        return { success: false, err: err };
+    }
+}
+
 module.exports = {
     addCity,
     editCity,
     deleteCity,
     getCityDetail,
-    validateEditCity
+    validateEditCity,
+    getAllCity
 };

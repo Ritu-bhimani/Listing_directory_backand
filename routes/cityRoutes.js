@@ -97,6 +97,23 @@ router.delete("/remove", async (req, res) => {
     }
 })
 
+router.get("/allCity", async (req, res) => {
+    try {
+        // var auth = common.validAuthHeader(req)
+
+        // if (auth.validated == true) {
+        var result = await city.getAllCity();
+        return res.send(result)
+        // } else {
+        //     var resmsg = { success: false, message: "Failed auth validation" }
+        //     return res.status(401).send(resmsg)
+        // }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
 
 router.get("/", async (req, res) => {
     const reqUserData = req.body;  // cityID
@@ -121,6 +138,5 @@ router.get("/", async (req, res) => {
         return res.send(result)
     }
 })
-
 
 module.exports = router
