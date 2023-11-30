@@ -262,53 +262,52 @@ const validateChangePswd = (data) => {
 }
 
 
-const getUserPublicInfo = async (userNameOrId) => {
+// const getUserPublicInfo = async (userNameOrId) => {
 
-    try {
-        const query = "SELECT userID, userName, email, firstName, lastName, phone, bio, socialNetworks, verificationStatus, address, profileImage FROM users WHERE userName = ? OR userID = ? ";
-        const result = await new Promise((resolve, reject) => {
-            db.query(
-                query, [userNameOrId, userNameOrId], (err, data) => {
-                    if (err) {
-                        reject({ success: false, error: err.toString() });
-                    }
-                    resolve(data);
-                }
-            );
-        });
-
-        if (result && result?.length > 0) {
-            return { success: true, data: result[0] };
-        } else if (result && result?.length == 0) {
-            return { success: false, message: "User doesn't found" };
-        } else {
-            const resMsg = { ...result };          // internal server error
-            return resMsg
-        }
-
-    } catch (error) {
-        return { success: false, error: err }
-    }
-
-};
-
-// const allUserDetails = async () => {
 //     try {
-//         const query = `SELECT userID, userName, email, verificationStatus, role, firstName, lastName, phone, bio, socialNetworks, address, profileImage, registerDateTime, resetPasswordDateTime, isAccountExists, favourites, updateDateTime As profileUpdateTime FROM users WHERE role !="Admin"`;
+//         const query = "SELECT userID, userName, email, firstName, lastName, phone, bio, socialNetworks, verificationStatus, address, profileImage FROM users WHERE userName = ? OR userID = ? ";
 //         const result = await new Promise((resolve, reject) => {
-//             db.query(query, (err, data) => {
-//                 if (err) {
-//                     reject({ success: false, error: err.toString() });
+//             db.query(
+//                 query, [userNameOrId, userNameOrId], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
 //                 }
-//                 resolve(data);
-//             });
+//             );
 //         });
-//         return { success: true, data: result };
+
+//         if (result && result?.length > 0) {
+//             return { success: true, data: result[0] };
+//         } else if (result && result?.length == 0) {
+//             return { success: false, message: "User doesn't found" };
+//         } else {
+//             const resMsg = { ...result };          // internal server error
+//             return resMsg
+//         }
 
 //     } catch (error) {
 //         return { success: false, error: err }
 //     }
 // };
+
+const allUserDetails = async () => {
+    try {
+        const query = `SELECT userID, userName, email, verificationStatus, role, firstName, lastName, phone, bio, socialNetworks, address, profileImage, registerDateTime, resetPasswordDateTime, isAccountExists, favourites, updateDateTime As profileUpdateTime FROM users WHERE role !="Admin"`;
+        const result = await new Promise((resolve, reject) => {
+            db.query(query, (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            });
+        });
+        return { success: true, data: result };
+
+    } catch (error) {
+        return { success: false, error: err }
+    }
+};
 
 
 const authenticateEmail = async (email, password) => {
@@ -354,6 +353,6 @@ module.exports = {
     removeProfileImage,
     delteUserAccount,
     validateChangePswd,
-    getUserPublicInfo,
-    // allUserDetails
+    // getUserPublicInfo,
+    allUserDetails
 }

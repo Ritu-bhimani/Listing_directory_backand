@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post("/add", async (req, res) => {  //  categoryName
 
-    if (!req.body.categoryName) { 
+    if (!req.body.categoryName) {
         return res.status(400).send({ success: false, message: "Category Name is required" })
     }
 
@@ -15,7 +15,7 @@ router.post("/add", async (req, res) => {  //  categoryName
 
         if (auth.validated == true) {
             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
-            
+
             if (payloadData.role !== "admin") {
                 return res.status(403).send({ success: false, message: "Unauthorized access" });
             }
@@ -69,8 +69,8 @@ router.delete("/remove", async (req, res) => {
 
     const reqUserData = req.body;  // categoryID
 
-    if(!reqUserData.categoryID){
-        return res.status(400).send({success: false, message: 'categoryID is required'})
+    if (!reqUserData.categoryID) {
+        return res.status(400).send({ success: false, message: 'categoryID is required' })
     }
 
     try {

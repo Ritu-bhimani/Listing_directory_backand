@@ -52,7 +52,7 @@ router.put("/changePassword", async (req, res) => {    // email, oldPassword, ne
         const auth = common.validAuthHeader(req);
 
         if (auth.validated == true) {
-    
+
             const { email, oldPassword, newPassword, confirmPassword } = req.body;
 
             const query = "SELECT userID, password FROM users WHERE email = ? limit 1";
@@ -230,6 +230,18 @@ router.put("/deleteUserAccount", async (req, res) => {        // this will only 
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role === "admin") {
+                return res.status(400).send({ success: false, message: "Cannot delete admin account" });
+            }
+
+            // // Additional check to prevent deletion of admin accounts
+            //  const ADMIN_USER_ID = 1;
+            // if (auth.userID === ADMIN_USER_ID) {
+            //     return res.status(400).send({ success: false, message: "Cannot delete admin account" });
+            // }
+
             var result = await user.delteUserAccount(auth?.userID)
             res.json(result)
         } else {
@@ -244,43 +256,43 @@ router.put("/deleteUserAccount", async (req, res) => {        // this will only 
 });
 
 
-router.get("/getUserPublicInfo", async (req, res) => {      // api/user/getUserPublicInfo?username=abc
-    try {
-        let usrObj = await user.getUserPublicInfo(req.query.userName || req.query.id)
-        var resmsg = usrObj
-        res.send(resmsg)
-    }
-    catch (error) {
-        var result = { success: false, error: err }
-        res.send(result)
-    }
-});
-
-
-// router.get("/allUser", async (req, res) => {
+// router.get("/getUserPublicInfo", async (req, res) => {      // api/user/getUserPublicInfo?username=abc
 //     try {
-//         var auth = common.validAuthHeader(req)
-
-//         if (auth.validated == true) {
-//             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
-
-//             if (payloadData.role !== "admin") {
-//                 return res.status(403).send({ success: false, message: "Unauthorized access" });
-//             }
-
-//             var result = await user.allUserDetails();
-//             res.json(result);
-
-//         } else {
-//             var resmsg = { success: false, message: "Failed auth validation" }
-//             res.status(401).json(resmsg)
-//         }
+//         let usrObj = await user.getUserPublicInfo(req.query.userName || req.query.id)
+//         var resmsg = usrObj
+//         res.send(resmsg)
 //     }
-//     catch (err) {
+//     catch (error) {
 //         var result = { success: false, error: err }
 //         res.send(result)
 //     }
 // });
+
+
+router.get("/allUser", async (req, res) => {    // for admin
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
+            var result = await user.allUserDetails();
+            res.json(result);
+
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            res.status(401).json(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        res.send(result)
+    }
+});
 
 
 module.exports = router;

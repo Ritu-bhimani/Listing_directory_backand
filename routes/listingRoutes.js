@@ -84,9 +84,45 @@ router.put("/remove", async (req, res) => {  // this will only change listing  "
 });
 
 
-router.get("/allListing", async (req, res) => {
+router.get("/allListing", async (req, res) => {      // for admin
+    // try {
+    //     let listingsData = await listing.getAllListing();
+    //     listingsData.success = true
+    //     return res.send(listingsData);
+    // }
+    // catch (err) {
+    //     var result = { success: false, error: err }
+    //     return res.send(result)
+    // }
+
     try {
-        let listingsData = await listing.getAllListing();
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+
+            if (payloadData.role !== "admin") {
+                return res.status(403).send({ success: false, message: "Unauthorized access" });
+            }
+
+            let listingsData = await listing.getAllListing();
+            listingsData.success = true;
+            return res.send(listingsData);
+
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.status(401).send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
+
+router.get("/allApprovedExistsListing", async (req, res) => {     // user 
+    try {
+        let listingsData = await listing.getAllApprovedExistsListing();
         listingsData.success = true
         return res.send(listingsData);
     }
@@ -97,7 +133,7 @@ router.get("/allListing", async (req, res) => {
 });
 
 
-router.get("/myListing", async (req, res) => {
+router.get("/myListing", async (req, res) => {     // not include deleted
     try {
         var auth = common.validAuthHeader(req)
 
@@ -116,7 +152,7 @@ router.get("/myListing", async (req, res) => {
 });
 
 
-router.get("/myFavourites", async (req, res) => {  // myFavourites with listing details
+router.get("/myFavourites", async (req, res) => {  // myFavourites with listing details   // not include notExists
     try {
         var auth = common.validAuthHeader(req)
 
@@ -135,7 +171,7 @@ router.get("/myFavourites", async (req, res) => {  // myFavourites with listing 
 });
 
 
-router.get("/myFavouritesIds", async (req, res) => {  // myfavourite listing's IDs
+router.get("/myFavouritesIds", async (req, res) => {  // myfavourite listing's IDs   // including notExists
     try {
         var auth = common.validAuthHeader(req)
 
@@ -154,8 +190,7 @@ router.get("/myFavouritesIds", async (req, res) => {  // myfavourite listing's I
 });
 
 
-router.get("/myListingReviews", async (req, res) => {
-
+router.get("/myListingReviews", async (req, res) => {  // not include notExists
     try {
         var auth = common.validAuthHeader(req)
 
@@ -174,8 +209,7 @@ router.get("/myListingReviews", async (req, res) => {
 });
 
 
-router.get("/myGivenReviews", async (req, res) => {
-
+router.get("/myGivenReviews", async (req, res) => {   // not include notExists/deleted
     try {
         var auth = common.validAuthHeader(req)
 
@@ -193,7 +227,7 @@ router.get("/myGivenReviews", async (req, res) => {
     }
 });
 
-router.get("/filter", async (req, res) => {
+router.get("/filter", async (req, res) => {       // only Approved, exists
 
     const { category, city } = req.body;
 
@@ -211,39 +245,39 @@ router.get("/filter", async (req, res) => {
     }
 });
 
-router.get("/categoryfilter", async (req, res) => {
+router.get("/categoryfilter", async (req, res) => {     // only Approved, exists
 
     if (!req.body.category) {
         return res.send({ success: false, message: "category field required" });
     }
 
     try {
-        let result = await listing.getListingCategoryWise(req.body)
-        return res.json(result)
+        let result = await listing.getListingCategoryWise(req.body);
+        return res.json(result);
     }
     catch (err) {
-        var result = { success: false, error: err }
-        return res.json(result)
+        var result = { success: false, error: err };
+        return res.json(result);
     }
 });
 
-router.get("/cityfilter", async (req, res) => {
+router.get("/cityfilter", async (req, res) => {     // only Approved, exists
 
     if (!req.body.city) {
         return res.send({ success: false, message: "city field required" });
     }
 
     try {
-        let result = await listing.getListingCityWise(req.body)
-        return res.json(result)
+        let result = await listing.getListingCityWise(req.body);
+        return res.json(result);
     }
     catch (err) {
-        var result = { success: false, error: err }
-        return res.json(result)
+        var result = { success: false, error: err };
+        return res.json(result);
     }
 });
 
-router.get("/:id", async (req, res) => {            // api/listing/:id
+router.get("/:id", async (req, res) => {            // api/listing/:id    // only Approved, exists
     try {
         let listingID = req.params?.id;
         let result = await listing.getListing(listingID);
@@ -258,23 +292,23 @@ router.get("/:id", async (req, res) => {            // api/listing/:id
 router.post("/addToFavourite", async (req, res) => {
 
     if (!req.body?.listingID) {
-        return res.status(400).send({ success: false, message: "listingID is required" })
+        return res.status(400).send({ success: false, message: "listingID is required" });
     }
 
     try {
         var auth = common.validAuthHeader(req)
 
         if (auth.validated == true) {
-            var result = await listing.addToFavourite(auth?.userID, req.body?.listingID)
-            return res.json(result)
+            var result = await listing.addToFavourite(auth?.userID, req.body?.listingID);
+            return res.json(result);
         } else {
-            var resmsg = { success: false, message: "Failed auth validation" }
-            return res.status(401).json(resmsg)
+            var resmsg = { success: false, message: "Failed auth validation" };
+            return res.status(401).json(resmsg);
         }
     }
     catch (err) {
-        var result = { success: false, error: err }
-        return res.send(result)
+        var result = { success: false, error: err };
+        return res.send(result);
     }
 });
 
@@ -386,7 +420,7 @@ router.put("/statusChange", async (req, res) => {
     }
 });
 
-router.put("/numOfListingInEachCategory", async (req, res) => {
+router.post("/numOfListingInEachCategory", async (req, res) => {  // only Approved, exists
     try {
         var auth = common.validAuthHeader(req)
 
