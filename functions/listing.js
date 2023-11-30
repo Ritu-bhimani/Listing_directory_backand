@@ -264,37 +264,53 @@ const editListing = async (data) => {
             return { success: false, message: "Listing doesn't exists" };
         }
 
-        // if bsLogo already exists then remove 
-        if (listingDataResult?.[0]?.bsLogo) {
-            let fileName = listingDataResult?.[0]?.bsLogo?.split("/public")?.[1];
-            fs.unlink(`${DIR}${fileName}`, (err) => {
-                if (err) {
-                    console.log("img unlink error", err.toString())
+        // old bsLogo entry exists in db, then check old/updated same, not same then check old exists in directory then remove
+        const oldBsLogo = listingDataResult?.[0]?.bsLogo;
+        const updatedBsLogo = data?.bsLogo;
+
+        if (oldBsLogo) {
+            const isBsLogoSame = (oldBsLogo === updatedBsLogo);
+
+            // if oldBsLogo not same then check oldBsLogo present in dir, if exists remove
+            if (!isBsLogoSame) {
+                let fileName = oldBsLogo?.split("/public")?.[1];
+                const isOldBsLogoExistsInDir = fs.existsSync(`${DIR}${fileName}`);
+
+                if (isOldBsLogoExistsInDir) {
+                    fs.unlink(`${DIR}${fileName}`, (err) => {
+                        if (err) {
+                            console.log("bsLogo unlink error", err.toString())
+                        }
+                    });
                 }
-            });
+
+            }
         }
 
-        // find if any bsImages urls removed and remove imgs from folder
+        // find if any bsImages urls removed from old and if any then remove imgs from folder
         const updatedBsImages = data?.bsImages || [];
         const oldBsImages = JSON.parse(listingDataResult?.[0]?.bsImages) || [];
 
-        const removedUrlIndex = [];
-        oldBsImages?.forEach((curr, ind) => {
-            if (!updatedBsImages?.includes(curr)) {
-                removedUrlIndex.push(ind);
-            }
-        });
+        if (oldBsImages?.length > 0 && updatedBsImages) {
 
-        if (removedUrlIndex?.length > 0) {
-            removedUrlIndex?.forEach((indexNum) => {
-                let fileName = oldBsImages[indexNum]?.split("/public")?.[1];
-
-                fs.unlink(`${DIR}${fileName}`, (err) => {
-                    if (err) {
-                        console.log("img unlink error", err.toString())
-                    }
-                })
+            const removedUrlIndex = [];
+            oldBsImages?.forEach((curr, ind) => {
+                if (!updatedBsImages?.includes(curr)) {
+                    removedUrlIndex.push(ind);
+                }
             });
+
+            if (removedUrlIndex?.length > 0) {
+                removedUrlIndex?.forEach((indexNum) => {
+                    let fileName = oldBsImages[indexNum]?.split("/public")?.[1];
+
+                    fs.unlink(`${DIR}${fileName}`, (err) => {
+                        if (err) {
+                            console.log("bsImg unlink error", err.toString())
+                        }
+                    })
+                });
+            }
         }
 
         const listingData = listingDataResult[0];
@@ -1529,7 +1545,7 @@ const validateListingStatusChangeFields = async (data) => {
 const numOfListingInEachCategory = async () => {
     try {
         // const query = `SELECT c.categoryID, c.categoryName, count(li.categoryID) As count FROM category AS c LEFT JOIN listing AS li  ON c.categoryID = li.categoryID GROUP BY c.categoryID`;
-        const query =`SELECT c.categoryID, c.categoryName, COUNT(li.categoryID) AS count FROM category AS c LEFT JOIN listing AS li ON c.categoryID = li.categoryID AND li.listingStatus = 'Approved' AND li.isListingExists = 'exists' GROUP BY c.categoryID;`;
+        const query = `SELECT c.categoryID, c.categoryName, COUNT(li.categoryID) AS count FROM category AS c LEFT JOIN listing AS li ON c.categoryID = li.categoryID AND li.listingStatus = 'Approved' AND li.isListingExists = 'exists' GROUP BY c.categoryID;`;
 
         const selectRes = await new Promise((resolve, reject) => {
             db.query(query, (err, data) => {
