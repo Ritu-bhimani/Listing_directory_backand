@@ -1,11 +1,9 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const { jwtDecode } = require('jwt-decode');
 const common = require("../functions/common.js");
 const user = require("../functions/user.js");
 const db = require("../config/dbConfig.js");
-const fs = require('fs');
-const path = require('path');
-const { jwtDecode } = require('jwt-decode');
 const { uploadImg, uploadProfileImage } = require("../functions/upload.js")
 
 
@@ -153,7 +151,58 @@ router.put("/updateUserSocial", async (req, res) => {         // if you don't pa
     }
 });
 
+// save to local folder
+// router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req, res) => {       /* "avatar" - name attribute of <file> element in your form */
 
+//     if (!req.file) {
+//         return res.send({ success: false, message: "Image file is required" })
+//     }
+
+//     try {
+//         var auth = common.validAuthHeader(req);
+
+//         if (auth.validated == true) {
+
+//             // if profile image already exist
+//             const selectQuery = "SELECT profileImage FROM users WHERE userID = ? limit 1";
+//             const result = await new Promise((resolve, reject) => {
+//                 db.query(
+//                     selectQuery, auth.userID, (err, data) => {
+//                         if (err) {
+//                             reject({ success: false, error: err.toString() });
+//                         }
+//                         resolve(data);
+//                     }
+//                 );
+//             });
+//             if (result && result?.length > 0 && result[0]?.profileImage ) {
+//                 user.removeProfileImage(result[0]?.profileImage, auth.userID)
+//             }
+
+//             // add new uploadede profile image
+//             let url = req.protocol + "://" + req.get("host");
+//             let fullUrl = req.file ? `${url}/public/${req.file.filename}` : "";
+
+//             if (req.file) {
+//                 var retObj = await user.addProfileImage(fullUrl, auth.userID);
+//                 return res.json(retObj);
+//             }
+//             else {
+//                 return res.status(400).json({ success: false, message: "File upload only supports .jpeg .jpg .png format" });
+//             }
+
+//         } else {
+//             var resmsg = { success: false, message: "Failed auth validation" };
+//             return res.status(401).json(resmsg);
+//         }
+
+//     } catch (err) {
+//         var result = { success: false, error: err };
+//         return res.json(result);
+//     }
+// });
+
+// save to cloudinary
 router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req, res) => {       /* "avatar" - name attribute of <file> element in your form */
 
     if (!req.file) {
@@ -165,7 +214,7 @@ router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req
 
         if (auth.validated == true) {
 
-            // if profile image already exist
+            // check profile image already exist then remove
             const selectQuery = "SELECT profileImage FROM users WHERE userID = ? limit 1";
             const result = await new Promise((resolve, reject) => {
                 db.query(
@@ -177,16 +226,14 @@ router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req
                     }
                 );
             });
-            if (result && result?.length > 0) {
+
+            if (result && result?.length > 0 && result[0]?.profileImage) {
                 user.removeProfileImage(result[0]?.profileImage, auth.userID)
             }
 
-            // add new uploadede profile image
-            let url = req.protocol + "://" + req.get("host");
-            let fullUrl = req.file ? `${url}/public/${req.file.filename}` : "";
-
+            // add new uploaded profile image
             if (req.file) {
-                var retObj = await user.addProfileImage(fullUrl, auth.userID);
+                var retObj = await user.addProfileImage(req.file.path, auth.userID);
                 return res.json(retObj);
             }
             else {
@@ -204,9 +251,8 @@ router.post("/saveProfileImage", uploadProfileImage.single("avatar"), async (req
     }
 });
 
-
+// for local & cloudinary
 router.put("/removeProfileImage", async (req, res) => {
-
     try {
         var auth = common.validAuthHeader(req);
 

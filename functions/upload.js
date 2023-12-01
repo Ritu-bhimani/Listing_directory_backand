@@ -1,7 +1,8 @@
-const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const common = require("./common.js")
+const multer = require('multer');
+const common = require("./common.js");
+const { cloudinary } = require("../config/cloudinaryConfig.js");
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -54,8 +55,31 @@ const uploadImgs = multer({
 });
 
 
+const uploadToCloudinary = async (locaFilePath) => {
+
+    const cloudinaryFolderName = "directory_listing/uploads/";
+
+    // const filePathOnCloudinary = cloudinaryFolderName + path.basename(locaFilePath);    // this will give extname 2 times in uploaded Img Url
+
+    const fileName = path.basename(locaFilePath, path.extname(locaFilePath));              // storing filename without extension   // this will give extname 1 time in uploaded Img Url
+    const filePathOnCloudinary = cloudinaryFolderName + path.basename(fileName);
+
+    return cloudinary.uploader.upload(locaFilePath, { public_id: filePathOnCloudinary })
+        .then((result) => {
+            fs.unlinkSync(locaFilePath);
+            return { success: true, url: result.url };
+        })
+        .catch((err) => {
+            console.log("uploadToCloudinary catch err ", err);
+            fs.unlinkSync(locaFilePath);
+            return { success: false, error: 'Error uploading to Cloudinary' };
+        })
+}
+
+
 module.exports = {
     uploadImg,
     uploadImgs,
-    uploadProfileImage
+    uploadProfileImage,
+    uploadToCloudinary
 }

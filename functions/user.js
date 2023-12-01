@@ -1,8 +1,11 @@
+const fs = require("fs");
+const path = require("path");
+const bcrypt = require("bcrypt");
 const validator = require("validator");
 const isEmpty = require("lodash.isempty");
-const bcrypt = require("bcrypt");
-const fs = require("fs");
 const db = require("../config/dbConfig.js");
+const { cloudinary } = require("../config/cloudinaryConfig.js");
+const { uploadToCloudinary } = require("./upload.js");
 
 const getUserByUserID = async (userID) => {
     try {
@@ -127,11 +130,46 @@ const updateUserSocial = async (data, userID) => {
 };
 
 
-const addProfileImage = async (imgPath, userID) => {
+// save to local folder
+// const addProfileImage = async (imgPath, userID) => {
+//     try {
+//         const query = "UPDATE users SET profileImage = ? WHERE userID = ?";
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(query, [imgPath, userID], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         if (result && result?.affectedRows > 0) {
+//             // return { success: true, message: "File uploaded successfully" };
+//             return { success: true, userID: userID, profileImage: imgPath };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+
+//     }
+//     catch (err) {
+//         return { success: false, error: err };
+//     }
+// }
+
+// save to cloudinary
+const addProfileImage = async (locaFilePath, userID) => {
     try {
+        const cloudinaryResult = await uploadToCloudinary(locaFilePath);
+
+        if (cloudinaryResult?.success !== true) {
+            return { ...cloudinaryResult };
+        }
+        const cloudinaryImgUrl = await cloudinaryResult?.url;
+
         const query = "UPDATE users SET profileImage = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {
-            db.query(query, [imgPath, userID], (err, data) => {
+            db.query(query, [cloudinaryImgUrl, userID], (err, data) => {
                 if (err) {
                     reject({ success: false, error: err.toString() });
                 }
@@ -141,7 +179,7 @@ const addProfileImage = async (imgPath, userID) => {
 
         if (result && result?.affectedRows > 0) {
             // return { success: true, message: "File uploaded successfully" };
-            return { success: true, userID: userID, profileImage: imgPath };
+            return { success: true, userID: userID, profileImage: cloudinaryImgUrl };
         }
         else {
             return { success: false, message: "Internal Server Error" };
@@ -154,11 +192,45 @@ const addProfileImage = async (imgPath, userID) => {
 }
 
 
+// save to local folder
+// const removeProfileImage = async (imgPath, userID) => {
+
+//     const DIR = './uploads';
+//     const fileName = imgPath?.split("/public")?.[1];
+
+//     try {
+//         const query = "UPDATE users SET profileImage = ? WHERE userID = ? and profileImage = ? ";
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(query, [null, userID, imgPath], (err, data) => {
+//                 if (err) {
+//                     reject({ success: false, error: err.toString() });
+//                 }
+//                 resolve(data);
+//             });
+//         });
+
+//         if (result && result?.affectedRows > 0) {
+//             fs.unlink(`${DIR}${fileName}`, (err) => {
+//                 if (err) {
+//                     console.log("img unlink error", err.toString())
+//                 }
+//             })
+//             return { success: true, userID: userID };
+//         }
+//         else if (result && result?.affectedRows == 0) {
+//             return { success: false, message: "Image path is not valid" }
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+//     }
+//     catch (err) {
+//         return { success: false, error: err };
+//     }
+// }
+
+// save to cloudinary
 const removeProfileImage = async (imgPath, userID) => {
-
-    const DIR = './uploads';
-    const fileName = imgPath?.split("/public")?.[1];
-
     try {
         const query = "UPDATE users SET profileImage = ? WHERE userID = ? and profileImage = ? ";
         const result = await new Promise((resolve, reject) => {
@@ -171,11 +243,13 @@ const removeProfileImage = async (imgPath, userID) => {
         });
 
         if (result && result?.affectedRows > 0) {
-            fs.unlink(`${DIR}${fileName}`, (err) => {
-                if (err) {
-                    console.log("img unlink error", err.toString())
-                }
-            })
+
+            const fileNameWithExt = imgPath?.split("directory_listing/uploads/")[1];
+            const extension = path.extname(fileNameWithExt);
+            const public_id = "directory_listing/uploads/" + fileNameWithExt.split(extension)[0];
+
+            await cloudinary.uploader.destroy(public_id);
+
             return { success: true, userID: userID };
         }
         else if (result && result?.affectedRows == 0) {
@@ -290,6 +364,7 @@ const validateChangePswd = (data) => {
 //         return { success: false, error: err }
 //     }
 // };
+
 
 const allUserDetails = async () => {
     try {

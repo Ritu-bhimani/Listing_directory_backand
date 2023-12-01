@@ -1,16 +1,9 @@
-const express = require("express")
-const cors = require("cors")
-const mysql = require("mysql2")
-const dotenv = require("dotenv").config()
-const validator = require("validator")
-const bcrypt = require("bcrypt")
-var nodemailer = require('nodemailer');
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2");
+const dotenv = require("dotenv").config();
 const db = require("./config/dbConfig.js");
 const serverRoutes = require("./routes/serverRoutes.js");
-const jwt = require("jsonwebtoken");
-const { jwtDecode } = require('jwt-decode');
-const common = require("./functions/common.js")
-const { uploadImg } = require("./functions/upload.js")
 
 const app = express()
 const port = process.env.PORT || 5001;
