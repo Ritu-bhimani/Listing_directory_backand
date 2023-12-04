@@ -36,7 +36,7 @@ const getProperty = function (obj, key) {
 
 
 const jwtSign = function (payload, expiration, secretKey) {
-    console.log("common jwtsign ", payload, expiration, secretKey)
+    console.log("common jwtsign ", payload, expiration)
     try {
         var token = jwt.sign({
             data: payload

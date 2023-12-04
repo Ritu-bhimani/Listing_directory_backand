@@ -151,6 +151,43 @@ router.get("/myListing", async (req, res) => {     // not include deleted
     }
 });
 
+router.get("/myPendingListing", async (req, res) => {     // not include deleted
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let listingsData = await listing.getMyPendingListing(auth.userID);
+            return res.send(listingsData);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.status(401).send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
+
+
+router.get("/myApprovedListing", async (req, res) => {     // not include deleted
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let listingsData = await listing.getMyApprovedListing(auth.userID);
+            return res.send(listingsData);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.status(401).send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
+
 
 router.get("/myFavourites", async (req, res) => {  // myFavourites with listing details   // not include notExists
     try {

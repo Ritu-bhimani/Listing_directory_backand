@@ -443,10 +443,13 @@ const validateEditListingFields = async (data) => {  // requird fields - listing
 const deleteListing = async (listingID) => {     // this will only change user  "isAccountExists"  status from  exists to  notExists. // not delete the record/account from user table.
     try {
         // const deleteQuery = "DELETE FROM listing WHERE listingID = ? ";
-        const updateQuery = "UPDATE listing SET isListingExists = ? WHERE listingID = ? ";
+        const updateQuery = "UPDATE listing SET isListingExists = ?, updateDateTime = ? WHERE listingID = ? ";
+
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
 
         const result = await new Promise((resolve, reject) => {
-            db.query(updateQuery, ["notExists", listingID], (err, data) => {
+            db.query(updateQuery, ["notExists", updateTime, listingID], (err, data) => {
                 if (err) {
                     reject({ success: false, error: err.toString() });
                 }
@@ -614,6 +617,77 @@ const getMyListing = async (ownerID) => {
     }
 }
 
+// according to new listing, review tables
+const getMyPendingListing = async (ownerID) => {        // pending listing ma review add n thay.
+    try {
+        const listingQuery = `SELECT * FROM listing WHERE userID = ? AND isListingExists = "exists" AND listingStatus = "Pending" ORDER BY listingID ASC`;
+
+        const listingsResult = await new Promise((resolve, reject) => {
+            db.query(listingQuery, [ownerID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            });
+        });
+
+        if (listingsResult && listingsResult?.length > 0) {
+            return { success: true, data: listingsResult };
+        } else {
+            return { success: false, message: "No listings found" };
+        }
+
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
+
+// according to new listing, review tables
+const getMyApprovedListing = async (ownerID) => {
+    try {
+        const reviewQuery = `SELECT * FROM reviews WHERE rwListingID IN (SELECT listingID FROM listing WHERE userID = ? AND isListingExists = "exists" AND listingStatus = "Approved")`;
+        const listingQuery = `SELECT * FROM listing WHERE userID = ? AND isListingExists = "exists" AND listingStatus = "Approved" ORDER BY listingID ASC`;
+
+        const reviewsResult = await new Promise((resolve, reject) => {
+            db.query(reviewQuery, [ownerID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            });
+        });
+
+        const listingsResult = await new Promise((resolve, reject) => {
+            db.query(listingQuery, [ownerID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            });
+        });
+
+        // combine reviews to belonging listing 
+        const combineRecords = listingsResult?.map((listing) => {
+            const currListing = listing;
+            currListing.reviews = [];
+            reviewsResult.forEach((currReview) => {
+                if (listing.listingID == currReview.rwListingID) {
+                    currListing.reviews.push(currReview);
+                }
+            })
+            return currListing;
+        })
+
+        if (combineRecords && combineRecords?.length > 0) {
+            return { success: true, data: combineRecords };
+        } else {
+            return { success: false, message: "No listings found" };
+        }
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
+
 // previous
 // const getListing = async (listingID) => {
 //     try {
@@ -739,12 +813,15 @@ const addToFavourite = async (userID, listingID) => {
             return { success: false, message: "This listing already present in your favourite listings list" }
         }
 
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
         // add listing to favourites
         userFavourites.push(listingID)
-        const updateQuery = "UPDATE users SET favourites = ? WHERE userID = ?";
+        const updateQuery = "UPDATE users SET favourites = ?, updateDateTime = ? WHERE userID = ?";
         const updateRes = await new Promise((resolve, reject) => {
             db.query(
-                updateQuery, [JSON.stringify(userFavourites), userID], (err, data) => {
+                updateQuery, [JSON.stringify(userFavourites), updateTime, userID], (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -783,11 +860,14 @@ const removeFromFavourite = async (userID, listingID) => {
 
         userFavourites = userFavourites.filter(listingId => listingId !== listingID)     // removed listingID from favourites
 
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
         // update user favourites
-        const updateQuery = "UPDATE users SET favourites = ? WHERE userID = ?";
+        const updateQuery = "UPDATE users SET favourites = ?, updateDateTime = ? WHERE userID = ?";
         const updateRes = await new Promise((resolve, reject) => {
             db.query(
-                updateQuery, [JSON.stringify(userFavourites), userID], (err, data) => {
+                updateQuery, [JSON.stringify(userFavourites), updateTime, userID], (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -1373,13 +1453,72 @@ const myGivenReviews = async (userID) => {
     }
 }
 
+// previous - not include 'all' category/city filter option
+// const getListingFilterWise = async (data) => {
+//     let query;
+//     let queryParams = [];
+
+//     if (data?.city && data?.category) {
+//         query = `SELECT * from listing WHERE categoryID = ? AND listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+//         queryParams = [data.category, data.city];
+//     }
+
+//     else if (data?.category) {
+//         query = `SELECT * from listing WHERE categoryID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+//         queryParams = [data.category];
+//     }
+
+//     else if (data?.city) {
+//         query = `SELECT * from listing WHERE listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+//         queryParams = [data.city];
+//     }
+
+//     try {
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(
+//                 query, [...queryParams], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         return { success: true, data: result }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return result
+//     }
+// }
+
+// with "all" filter option in category/city 
 const getListingFilterWise = async (data) => {
     let query;
     let queryParams = [];
 
     if (data?.city && data?.category) {
-        query = `SELECT * from listing WHERE categoryID = ? AND listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
-        queryParams = [data.category, data.city];
+
+        if (data?.city !== "all" && data?.category !== "all") {
+            query = `SELECT * from listing WHERE categoryID = ? AND listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.category, data.city];
+        }
+
+        else if (data?.city == "all" && data?.category !== "all") {
+            query = `SELECT * from listing WHERE categoryID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.category];
+        }
+
+        else if (data?.category == "all" && data?.city !== "all") {
+            query = `SELECT * from listing WHERE listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.city];
+        }
+
+        else if (data?.city === "all" && data?.category === "all") {
+            query = `SELECT * from listing WHERE isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [];
+        }
     }
 
     else if (data?.category) {
@@ -1395,7 +1534,7 @@ const getListingFilterWise = async (data) => {
     try {
         const result = await new Promise((resolve, reject) => {
             db.query(
-                query, [...queryParams], (err, data) => {
+                query, queryParams, (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -1635,5 +1774,7 @@ module.exports = {
     statusChange,
     validateListingStatusChangeFields,
     numOfListingInEachCategory,
-    getAllApprovedExistsListing
+    getAllApprovedExistsListing,
+    getMyPendingListing,
+    getMyApprovedListing
 };

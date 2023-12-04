@@ -8,7 +8,9 @@ const { sendMail } = require("../middlewares/sendMail.js");
 
 const validateRole = (role) => {
   // const validRoles = ["admin", "user", "basic"];
-  const validRoles = ["admin", "user"];
+  // const validRoles = ["admin", "user"];
+  const validRoles = ["user"];
+
   return validRoles.includes(role);
 };
 
@@ -78,7 +80,8 @@ const validateSignUp = (userData) => {
     // must need to send from frontend side as a string (admin or user. not 'basic' for now)     // in db type: enum
     errors.role = "Role field is required";
   } else if (!validateRole(data.role.toString())) {
-    errors.role = "Role must be 'admin' or 'user'";
+    // errors.role = "Role must be 'admin' or 'user'";
+    errors.role = "Role must be 'user'";
   }
 
   return {
@@ -140,7 +143,7 @@ const sendPasswordResetToken = async (email) => {
       return { success: false, statusCode: 404, message: "the provided email was not found" };
     } else {
       const resetPswdToken = jwt.sign({ email: result[0].email }, process.env.SECRET_KEY + result[0].userID, { expiresIn: process.env.RESET_PSWD_TOKEN_EXP_MIN });
-      console.log("ResetPswdToken for forgotPassword: ", `${resetPswdToken}`);
+      // console.log("ResetPswdToken for forgotPassword: ", `${resetPswdToken}`);
 
       const updateQuery = "UPDATE users SET resetPasswordToken = ?, resetPasswordDateTime = ? WHERE email = ?";
 

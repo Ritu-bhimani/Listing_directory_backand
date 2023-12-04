@@ -30,12 +30,14 @@ const getUserByUserID = async (userID) => {
 const changePassword = async (userID, newPassword) => {
     try {
         const encPassword = bcrypt.hashSync(newPassword, bcrypt.genSaltSync(10));
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
 
-        const updateQuery = "UPDATE users SET password = ? WHERE userID = ? ";
+        const updateQuery = "UPDATE users SET password = ?, updateDateTime = ? WHERE userID = ? ";
 
         const result = await new Promise((resolve, reject) => {
             db.query(
-                updateQuery, [encPassword, userID], (err, data) => {
+                updateQuery, [encPassword, updateTime, userID], (err, data) => {
                     if (err) {
                         reject({ success: false, error: err.toString() });
                     }
@@ -167,9 +169,12 @@ const addProfileImage = async (locaFilePath, userID) => {
         }
         const cloudinaryImgUrl = await cloudinaryResult?.url;
 
-        const query = "UPDATE users SET profileImage = ? WHERE userID = ?";
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
+        const query = "UPDATE users SET profileImage = ?, updateDateTime = ? WHERE userID = ?";
         const result = await new Promise((resolve, reject) => {
-            db.query(query, [cloudinaryImgUrl, userID], (err, data) => {
+            db.query(query, [cloudinaryImgUrl, updateTime, userID], (err, data) => {
                 if (err) {
                     reject({ success: false, error: err.toString() });
                 }
@@ -182,9 +187,13 @@ const addProfileImage = async (locaFilePath, userID) => {
             return { success: true, userID: userID, profileImage: cloudinaryImgUrl };
         }
         else {
+            const fileNameWithExt = cloudinaryImgUrl?.split("directory_listing/uploads/")[1];
+            const extension = path.extname(fileNameWithExt);
+            const public_id = "directory_listing/uploads/" + fileNameWithExt.split(extension)[0];
+            await cloudinary.uploader.destroy(public_id);
+
             return { success: false, message: "Internal Server Error" };
         }
-
     }
     catch (err) {
         return { success: false, error: err };
@@ -232,9 +241,12 @@ const addProfileImage = async (locaFilePath, userID) => {
 // save to cloudinary
 const removeProfileImage = async (imgPath, userID) => {
     try {
-        const query = "UPDATE users SET profileImage = ? WHERE userID = ? and profileImage = ? ";
+        const date = new Date();
+        const updateTime = date.toISOString().slice(0, 19).replace('T', ' ');
+
+        const query = "UPDATE users SET profileImage = ?, updateDateTime = ? WHERE userID = ? and profileImage = ? ";
         const result = await new Promise((resolve, reject) => {
-            db.query(query, [null, userID, imgPath], (err, data) => {
+            db.query(query, [null, updateTime, userID, imgPath], (err, data) => {
                 if (err) {
                     reject({ success: false, error: err.toString() });
                 }
