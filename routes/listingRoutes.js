@@ -84,7 +84,7 @@ router.put("/remove", async (req, res) => {  // this will only change listing  "
 });
 
 
-router.get("/allListing", async (req, res) => {      // for admin
+router.get("/allListing", async (req, res) => {      // for admin   // listing with owner few details
     // try {
     //     let listingsData = await listing.getAllListing();
     //     listingsData.success = true

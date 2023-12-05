@@ -501,7 +501,8 @@ const getAllListing = async () => {
         // const query = `SELECT li.listingID, li.title, r.* As ABC FROM listing AS li LEFT JOIN reviews AS r ON li.listingID = r.rwListingID where r.rwListingID = li.listingID`;
 
         const reviewQuery = "SELECT * FROM reviews ORDER BY rwListingID ASC";
-        const listingQuery = "SELECT * FROM listing ORDER BY listingID ASC";
+        // const listingQuery = "SELECT * FROM listing ORDER BY listingID ASC"; 
+        const listingQuery = `SELECT li.*, u.userID, u.userName, u.email, u.phone, u.bio, u.socialNetworks, u.verificationStatus, u.profileImage, u.registerDateTime, u.lastName, u.firstName FROM listing AS li JOIN users AS u ON li.userID = u.userID ORDER BY listingID ASC;`;     // listings with owner's few details
 
         const reviewsResult = await new Promise((resolve, reject) => {
             db.query(reviewQuery, (err, data) => {
