@@ -188,7 +188,7 @@ const addProfileImage = async (locaFilePath, userID) => {
         }
         else {
             const fileNameWithExt = cloudinaryImgUrl?.split("directory_listing/uploads/")[1];
-            const extension = path.extname(fileNameWithExt);
+            const extension = path.extname(fileNameWithExt).toLowerCase();
             const public_id = "directory_listing/uploads/" + fileNameWithExt.split(extension)[0];
             await cloudinary.uploader.destroy(public_id);
 
@@ -257,7 +257,7 @@ const removeProfileImage = async (imgPath, userID) => {
         if (result && result?.affectedRows > 0) {
 
             const fileNameWithExt = imgPath?.split("directory_listing/uploads/")[1];
-            const extension = path.extname(fileNameWithExt);
+            const extension = path.extname(fileNameWithExt).toLowerCase();
             const public_id = "directory_listing/uploads/" + fileNameWithExt.split(extension)[0];
 
             await cloudinary.uploader.destroy(public_id);

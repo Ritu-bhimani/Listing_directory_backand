@@ -51,7 +51,7 @@ router.post("/single", uploadImg.single("file"), async (req, res) => {
         if (req.file) {
             const allowedExtns = [".jpeg", ".jpg", ".png"];
 
-            if (!allowedExtns?.includes(path.extname(req.file?.originalname))) {
+            if (!allowedExtns?.includes(path.extname(req.file?.originalname).toLowerCase())) {
                 fs.unlink(`${DIR}${req.file.filename}`, (err) => {
                     if (err) {
                         console.log("img unlink error", err)
@@ -144,14 +144,14 @@ router.post("/multiple", uploadImgs.array("files"), async (req, res) => {
             let fileUrls = [];
 
             for (var i = 0; i < req.files.length; i++) {
-                if (!allowedExtns.includes(path.extname(req.files[i].originalname)) || req.files[i].size > 1024 * 1024 * 5) {
+                if (!allowedExtns.includes(path.extname(req.files[i].originalname).toLowerCase()) || req.files[i].size > 1024 * 1024 * 5) {
                     fs.unlink(req.files[i].path, (err) => {
                         if (err) {
                             console.log("img unlink error", err.toString());
                         }
                     });
                 } else {
-                    const cloudinaryResult = await uploadToCloudinary(req.files[i].path);
+                   const cloudinaryResult = await uploadToCloudinary(req.files[i].path);
 
                     if (cloudinaryResult?.success === true) {
                         fileUrls.push(cloudinaryResult.url);

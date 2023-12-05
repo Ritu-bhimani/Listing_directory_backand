@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 const imgFileFilter = (req, file, cb) => {
     const allowedExtns = [".jpeg", ".jpg", ".png"];
 
-    if (allowedExtns?.includes(path.extname(file.originalname))) {
+    if (allowedExtns?.includes(path.extname(file.originalname).toLowerCase())) {
         return cb(null, true);
     } else {
         return cb(("error: File upload only supports .jpeg .jpg .png"));
@@ -61,7 +61,7 @@ const uploadToCloudinary = async (locaFilePath) => {
 
     // const filePathOnCloudinary = cloudinaryFolderName + path.basename(locaFilePath);    // this will give extname 2 times in uploaded Img Url
 
-    const fileName = path.basename(locaFilePath, path.extname(locaFilePath));              // storing filename without extension   // this will give extname 1 time in uploaded Img Url
+    const fileName = path.basename(locaFilePath, path.extname(locaFilePath).toLowerCase());              // storing filename without extension   // this will give extname 1 time in uploaded Img Url
     const filePathOnCloudinary = cloudinaryFolderName + path.basename(fileName);
 
     return cloudinary.uploader.upload(locaFilePath, { public_id: filePathOnCloudinary })
