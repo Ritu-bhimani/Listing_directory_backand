@@ -5,6 +5,7 @@ const db = require("../config/dbConfig.js");
 const user = require("../functions/user.js");
 const { uuidv4 } = require("./common.js");
 const fs = require("fs");
+const { addNotification } = require("./notification.js")
 
 const router = express.Router();
 
@@ -66,8 +67,67 @@ const router = express.Router();
 // }
 
 // changed according to new listing, review tables
-let addListing = async (data) => {   // requird - title, category, description 
+// let addListing = async (data) => {   // requird - title, category, description 
 
+//     try {
+//         const insertQuery =
+//             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, updateDateTime, isListingExists, approveTime, rejectTime, tagline) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+//         const date = new Date();
+
+//         const result = await new Promise((resolve, reject) => {
+//             db.query(
+//                 insertQuery,
+//                 [
+//                     null,                                     // listingID
+//                     data?.userID,                             // userID
+//                     data?.title,                              // title
+//                     JSON.stringify(data?.address || {}),      // address
+//                     data?.city || null,                       // listingCityID
+//                     data?.phone || null,                      // phone
+//                     data?.website || null,                    // website
+//                     data.category,                            // categoryID      
+//                     JSON.stringify(data?.price || {}),         // price
+//                     JSON.stringify(data?.businessHours || []),  // businessHours
+//                     JSON.stringify(data?.socialMedia || []),    // socialMedia
+//                     JSON.stringify(data?.faqs || []),           // faqs
+//                     data?.description,                          // description
+//                     data?.keywords || null,                   //  keywords
+//                     data?.bsVideoUrl || null,                   // bsVideoUrl,
+//                     JSON.stringify(data?.bsImages || []),      // bsImages,
+//                     data?.bsLogo || null,                       // bsLogo
+//                     "Pending",                  // listingStatus  enum('Approved', 'Canceled', 'Pending')
+//                     date.toISOString().slice(0, 19).replace('T', ' '),   // postedDateTime       // new Date().toISOString(),   // postedDateTime
+//                     null,                         //  updateDateTime
+//                     "exists",                     //  isListingExists
+//                     null,                         //  approveTime
+//                     null,                         //  rejectTime
+//                     data?.tagline || null         //  tagline    
+//                 ],
+//                 (err, data) => {
+//                     if (err) {
+//                         if (err.code === "ER_NO_REFERENCED_ROW_2" || err.code === "ER_NO_REFERENCED_ROW" || err.code === "ER_NO_REFERENCED_ROW_1") {
+//                             return reject({ success: false, error: "Invalid city or category. Please provide valid city or category." });
+//                         }
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (result && result?.insertId) {
+//             return { success: true, listingID: result?.insertId }
+//         }
+
+//     } catch (err) {
+//         return { success: false, error: err }
+//     }
+// }
+
+
+// added notification
+let addListing = async (data) => {   // requird - title, category, description 
     try {
         const insertQuery =
             "INSERT INTO listing(listingID, userID, title, address, listingCityID, phone, website, categoryID, price, businessHours, socialMedia, faqs, description, keywords, bsVideoUrl, bsImages, bsLogo, listingStatus, postedDateTime, updateDateTime, isListingExists, approveTime, rejectTime, tagline) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
@@ -85,7 +145,7 @@ let addListing = async (data) => {   // requird - title, category, description
                     data?.city || null,                       // listingCityID
                     data?.phone || null,                      // phone
                     data?.website || null,                    // website
-                    data.category,                            // categoryID      
+                    data.category,                            // categoryID
                     JSON.stringify(data?.price || {}),         // price
                     JSON.stringify(data?.businessHours || []),  // businessHours
                     JSON.stringify(data?.socialMedia || []),    // socialMedia
@@ -95,13 +155,13 @@ let addListing = async (data) => {   // requird - title, category, description
                     data?.bsVideoUrl || null,                   // bsVideoUrl,
                     JSON.stringify(data?.bsImages || []),      // bsImages,
                     data?.bsLogo || null,                       // bsLogo
-                    "Pending",                  // listingStatus  enum('Approved', 'Canceled', 'Pending')
+                    "Pending",                  // listingStatus  enum('Approved', 'Rejected', 'Pending')
                     date.toISOString().slice(0, 19).replace('T', ' '),   // postedDateTime       // new Date().toISOString(),   // postedDateTime
                     null,                         //  updateDateTime
                     "exists",                     //  isListingExists
                     null,                         //  approveTime
                     null,                         //  rejectTime
-                    data?.tagline || null         //  tagline    
+                    data?.tagline || null         //  tagline
                 ],
                 (err, data) => {
                     if (err) {
@@ -116,6 +176,17 @@ let addListing = async (data) => {   // requird - title, category, description
         });
 
         if (result && result?.insertId) {
+            let datas = {
+                type: "listing_added",
+                listingID: result?.insertId,
+                listingTitle: data.title,
+                createdByID: data.userID,
+                notificationView: JSON.stringify([]),
+                clearNotification: JSON.stringify([]),
+                approvals: null,
+                createdFor: null    // for admin
+            };
+            await addNotification(datas);
             return { success: true, listingID: result?.insertId }
         }
 
@@ -152,6 +223,7 @@ const validateAddListingFields = async (data) => {
     };
 }
 
+// changed according to new listing, review tables
 // const editListing = async (data) => {
 //     try {
 //         // const listingData = await getListingByID(data.listingID);  +  resolve(data?.[0]);  // if listingID is not valid then not giving err in response
@@ -245,6 +317,7 @@ const validateAddListingFields = async (data) => {
 // }
 
 
+// added notification
 const editListing = async (data) => {
     try {
         // const listingData = await getListingByID(data.listingID);  +  resolve(data?.[0]);  // if listingID is not valid then not giving err in response
@@ -335,10 +408,11 @@ const editListing = async (data) => {
         listingData.socialMedia = data?.socialMedia ? JSON.stringify(data.socialMedia) : listingData.socialMedia;
         // listingData.updateDateTime = new Date().toISOString();
         listingData.updateDateTime = date.toISOString().slice(0, 19).replace('T', ' ')
+        listingData.listingStatus = "Pending"      // if listing already 'approved' then also make 'pending'
 
         // listingStatus, reviews, postedDateTime, isListingExists, approveTime, rejectTime - user can't change
 
-        const updateQuery = "UPDATE listing SET title = ?, address = ?, listingCityID = ?, phone = ?, website = ?, categoryID =?, price = ?, businessHours = ?, socialMedia = ?, faqs = ?, description = ?, keywords = ?, bsVideoUrl = ?, bsImages = ?, bsLogo = ?, updateDateTime = ?, tagline = ? WHERE listingID = ? ";
+        const updateQuery = "UPDATE listing SET title = ?, address = ?, listingCityID = ?, phone = ?, website = ?, categoryID =?, price = ?, businessHours = ?, socialMedia = ?, faqs = ?, description = ?, keywords = ?, bsVideoUrl = ?, bsImages = ?, bsLogo = ?, updateDateTime = ?, tagline = ?, listingStatus = ? WHERE listingID = ? ";
 
         const result = await new Promise((resolve, reject) => {
             db.query(updateQuery,
@@ -360,7 +434,8 @@ const editListing = async (data) => {
                     listingData.bsLogo,
                     listingData.updateDateTime,
                     listingData.tagline,
-                    listingData.listingID,
+                    listingData.listingStatus,      // if listing already 'approved' then also make 'pending'    // need to change approveTime to "" ?
+                    listingData.listingID
                 ],
                 (err, data) => {
                     if (err) {
@@ -375,6 +450,17 @@ const editListing = async (data) => {
         });
 
         if (result && result?.affectedRows > 0) {
+            let datas = {
+                type: "listing_updated",
+                listingID: listingData.listingID,
+                listingTitle: listingData.title,
+                createdByID: listingData.userID,
+                notificationView: JSON.stringify([]),
+                clearNotification: JSON.stringify([]),
+                approvals: null,
+                createdFor: null  // for admin
+            };
+            await addNotification(datas);
             return { success: true, listingID: data.listingID };
         } else if (result && result?.affectedRows == 0) {
             return { success: false, message: "listingID is invalid" };
@@ -635,7 +721,8 @@ const getMyPendingListing = async (ownerID) => {        // pending listing ma re
         if (listingsResult && listingsResult?.length > 0) {
             return { success: true, data: listingsResult };
         } else {
-            return { success: false, message: "No listings found" };
+            // return { success: false, message: "No listings found" };
+            return { success: true, data: [], message: "No listings found" };
         }
 
     } catch (err) {
@@ -682,8 +769,36 @@ const getMyApprovedListing = async (ownerID) => {
         if (combineRecords && combineRecords?.length > 0) {
             return { success: true, data: combineRecords };
         } else {
-            return { success: false, message: "No listings found" };
+            // return { success: false, message: "No listings found" };
+            return { success: true, data: [], message: "No listings found" };
         }
+    } catch (err) {
+        return { success: false, error: err }
+    }
+}
+
+
+// according to new listing, review tables
+const getMyRejectedListing = async (ownerID) => {
+    try {
+        const listingQuery = `SELECT * FROM listing WHERE userID = ? AND isListingExists = "exists" AND listingStatus = "Rejected" ORDER BY listingID ASC`;
+
+        const listingsResult = await new Promise((resolve, reject) => {
+            db.query(listingQuery, [ownerID], (err, data) => {
+                if (err) {
+                    reject({ success: false, error: err.toString() });
+                }
+                resolve(data);
+            });
+        });
+
+        if (listingsResult && listingsResult?.length > 0) {
+            return { success: true, data: listingsResult };
+        } else {                                                               // there is not any listing in 'Rejected' state 
+            // return { success: false, message: "No listings found" };
+            return { success: true, data: [], message: "No listings found" };
+        }
+
     } catch (err) {
         return { success: false, error: err }
     }
@@ -1271,9 +1386,9 @@ let editReview = async (userID, listingID, data) => {
         const listingData = await getListingByID(listingID);          // invalid listingID then undefined listingData[0]
         if (!(listingData?.length > 0)) {
             return { success: false, message: 'listingID is invalid' };
-        } else if (listingDataResult.success == false) {
-            return { ...listingDataResult };
-        } else if (listingDataResult && listingDataResult[0].isListingExists !== "exists" || listingDataResult[0].listingStatus !== "Approved") {
+        } else if (listingData.success == false) {
+            return { ...listingData };
+        } else if (listingData && listingData[0].isListingExists !== "exists" || listingData[0].listingStatus !== "Approved") {
             return { success: false, message: "Listing doesn't exists" };
         }
 
@@ -1501,7 +1616,7 @@ const getListingFilterWise = async (data) => {
 
     if (data?.city && data?.category) {
 
-        if (data?.city !== "all" && data?.category !== "all") {
+        if (data?.city !== "all" && data?.category !== "all") {    // both has id
             query = `SELECT * from listing WHERE categoryID = ? AND listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
             queryParams = [data.category, data.city];
         }
@@ -1523,13 +1638,25 @@ const getListingFilterWise = async (data) => {
     }
 
     else if (data?.category) {
-        query = `SELECT * from listing WHERE categoryID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
-        queryParams = [data.category];
+        if (data?.category !== "all") {
+            query = `SELECT * from listing WHERE categoryID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.category];
+        }
+        else {
+            query = `SELECT * from listing WHERE isListingExists = "exists" AND listingStatus = "Approved"`;
+        }
     }
 
     else if (data?.city) {
-        query = `SELECT * from listing WHERE listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
-        queryParams = [data.city];
+
+        if (data?.city !== "all") {
+            query = `SELECT * from listing WHERE listingCityID = ? AND isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.city];
+        }
+        else {
+            query = `SELECT * from listing WHERE isListingExists = "exists" AND listingStatus = "Approved"`;
+            queryParams = [data.city];
+        }
     }
 
     try {
@@ -1596,7 +1723,74 @@ const getListingCityWise = async (data) => {
     }
 }
 
-const statusChange = async (listingID, listingStatus) => {
+// without notification
+// const statusChange = async (listingID, listingStatus) => {
+//     try {
+//         const selecteQuery = `SELECT * FROM listing WHERE listingID = ? `;
+//         const listingResult = await new Promise((resolve, reject) => {
+//             db.query(
+//                 selecteQuery, [listingID], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (listingResult && !(listingResult.length > 0)) {
+//             return { success: false, message: "listingID is invalid" };
+//         }
+
+//         if (listingResult.length > 0 && listingResult[0].listingStatus == "Approved") {
+//             return { success: true, message: "listing already approved" };
+//         }
+
+//         if (listingResult.length > 0 && listingResult[0].isListingExists !== "exists") {
+//             return { success: false, message: "Listing doesn't exists" };
+//         }
+
+//         let query;
+//         let date = new Date();
+//         date = date.toISOString().slice(0, 19).replace('T', ' ')
+
+//         if (listingStatus == "Approved") {
+//             query = `UPDATE listing SET approveTime = ?, listingStatus = "Approved" WHERE listingID = ? `;
+//             // query = "UPDATE listing SET approveTime = ?, rejectTime = null WHERE listingID = ? ";
+//         } else {
+//             query = `UPDATE listing SET rejectTime = ?, listingStatus = "Rejected" WHERE listingID = ? `;
+//             // query = "UPDATE listing SET rejectTime = ?, approveTime = null WHERE listingID = ? ";
+//         }
+
+//         const updateResult = await new Promise((resolve, reject) => {
+//             db.query(
+//                 query, [date, listingID], (err, data) => {
+//                     if (err) {
+//                         reject({ success: false, error: err.toString() });
+//                     }
+//                     resolve(data);
+//                 }
+//             );
+//         });
+
+//         if (updateResult && updateResult?.affectedRows > 0) {
+//             return { success: true, message: listingStatus == "Approved" ? 'Listing approved' : 'Listing rejected' };
+//         } else if (updateResult && updateResult?.affectedRows == 0) {
+//             return { success: false, message: "listingID is invalid" };
+//         }
+//         else {
+//             return { success: false, message: "Internal Server Error" };
+//         }
+//     }
+//     catch (err) {
+//         var result = { success: false, error: err }
+//         return result
+//     }
+// }
+
+// added notification
+const statusChange = async (listingID, listingStatus, adminID) => {
+
     try {
         const selecteQuery = `SELECT * FROM listing WHERE listingID = ? `;
         const listingResult = await new Promise((resolve, reject) => {
@@ -1614,7 +1808,7 @@ const statusChange = async (listingID, listingStatus) => {
             return { success: false, message: "listingID is invalid" };
         }
 
-        if (listingResult.length > 0 && listingResult[0].listingStatus == "Approved") {
+        if (listingResult.length > 0 && listingResult[0].listingStatus === "Approved" && listingStatus === "Approved") {    // if listing already 'approved' then user edit  then status will be 'pending'
             return { success: true, message: "listing already approved" };
         }
 
@@ -1646,7 +1840,23 @@ const statusChange = async (listingID, listingStatus) => {
         });
 
         if (updateResult && updateResult?.affectedRows > 0) {
+            
+            let datas = {
+                type: listingStatus == "Approved" ? "listing_approved" : "listing_rejected",
+                listingID: listingID,
+                listingTitle: listingResult[0].title,
+                createdByID: adminID,
+                notificationView: JSON.stringify([]),
+                clearNotification: JSON.stringify([]),
+                // approvals: null
+                approvals: listingResult[0].approveTime ? "listing_updated" : null,   // already aproved_listing edited, then  if admin approve it(that lisitng),  then add  'approval' as listing_updated
+                createdFor: listingResult[0]?.userID    // for user
+            };
+
+            await addNotification(datas);
+
             return { success: true, message: listingStatus == "Approved" ? 'Listing approved' : 'Listing rejected' };
+
         } else if (updateResult && updateResult?.affectedRows == 0) {
             return { success: false, message: "listingID is invalid" };
         }
@@ -1777,5 +1987,6 @@ module.exports = {
     numOfListingInEachCategory,
     getAllApprovedExistsListing,
     getMyPendingListing,
-    getMyApprovedListing
+    getMyApprovedListing,
+    getMyRejectedListing
 };

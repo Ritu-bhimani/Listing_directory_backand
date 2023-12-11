@@ -25,6 +25,17 @@ db.connect((err) => {
     console.log('Connected to database as ID ' + db.threadId);
 });
 
+db.on('error', err => {
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        console.error("Connection to database lost. Reconnecting...");
+        db.connect();
+    } else {
+        console.error("Database error:", err.message);
+    }
+});
+
+
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
 })

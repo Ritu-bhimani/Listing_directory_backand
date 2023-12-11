@@ -85,6 +85,7 @@ router.put("/remove", async (req, res) => {  // this will only change listing  "
 
 
 router.get("/allListing", async (req, res) => {      // for admin   // listing with owner few details
+    // including 'Approved', 'Rejected', 'Pending','exists', 'notExists'
     // try {
     //     let listingsData = await listing.getAllListing();
     //     listingsData.success = true
@@ -120,6 +121,7 @@ router.get("/allListing", async (req, res) => {      // for admin   // listing w
     }
 });
 
+
 router.get("/allApprovedExistsListing", async (req, res) => {     // user 
     try {
         let listingsData = await listing.getAllApprovedExistsListing();
@@ -151,6 +153,7 @@ router.get("/myListing", async (req, res) => {     // not include deleted
     }
 });
 
+
 router.get("/myPendingListing", async (req, res) => {     // not include deleted
     try {
         var auth = common.validAuthHeader(req)
@@ -176,6 +179,25 @@ router.get("/myApprovedListing", async (req, res) => {     // not include delete
 
         if (auth.validated == true) {
             let listingsData = await listing.getMyApprovedListing(auth.userID);
+            return res.send(listingsData);
+        } else {
+            var resmsg = { success: false, message: "Failed auth validation" }
+            return res.status(401).send(resmsg)
+        }
+    }
+    catch (err) {
+        var result = { success: false, error: err }
+        return res.send(result)
+    }
+});
+
+
+router.get("/myRejectedListing", async (req, res) => {     // not include deleted
+    try {
+        var auth = common.validAuthHeader(req)
+
+        if (auth.validated == true) {
+            let listingsData = await listing.getMyRejectedListing(auth.userID);
             return res.send(listingsData);
         } else {
             var resmsg = { success: false, message: "Failed auth validation" }
@@ -264,6 +286,7 @@ router.get("/myGivenReviews", async (req, res) => {   // not include notExists/d
     }
 });
 
+
 router.get("/filter", async (req, res) => {       // only Approved, exists
 
     const { category, city } = req.body;
@@ -282,6 +305,7 @@ router.get("/filter", async (req, res) => {       // only Approved, exists
     }
 });
 
+
 router.get("/categoryfilter", async (req, res) => {     // only Approved, exists
 
     if (!req.body.category) {
@@ -298,6 +322,7 @@ router.get("/categoryfilter", async (req, res) => {     // only Approved, exists
     }
 });
 
+
 router.get("/cityfilter", async (req, res) => {     // only Approved, exists
 
     if (!req.body.city) {
@@ -313,6 +338,7 @@ router.get("/cityfilter", async (req, res) => {     // only Approved, exists
         return res.json(result);
     }
 });
+
 
 router.get("/:id", async (req, res) => {            // api/listing/:id    // only Approved, exists
     try {
@@ -372,6 +398,7 @@ router.put("/removeFromFavourite", async (req, res) => {
         return res.send(result)
     }
 });
+
 
 router.post("/:id/review", async (req, res) => {          // user can only able to add one review to every listing of someone
 
@@ -438,12 +465,13 @@ router.put("/statusChange", async (req, res) => {
 
         if (auth.validated == true) {
             const payloadData = jwtDecode(req.headers["authorization"]?.split(' ')[1])?.data;
+            const adminID = payloadData.userID
 
             if (payloadData.role !== "admin") {
                 return res.status(403).send({ success: false, message: "Unauthorized access" });
             }
 
-            let resObj = await listing.statusChange(req.body.listingID, req.body.listingStatus);
+            let resObj = await listing.statusChange(req.body.listingID, req.body.listingStatus, adminID);
             return res.send(resObj);
 
         } else {
@@ -456,6 +484,7 @@ router.put("/statusChange", async (req, res) => {
         return res.send(result)
     }
 });
+
 
 router.post("/numOfListingInEachCategory", async (req, res) => {  // only Approved, exists
     try {
@@ -481,5 +510,6 @@ router.post("/numOfListingInEachCategory", async (req, res) => {  // only Approv
         return res.send(result)
     }
 });
+
 
 module.exports = router;

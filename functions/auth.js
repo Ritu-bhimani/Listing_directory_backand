@@ -103,7 +103,7 @@ const validateSignIn = (data) => {
   data.password = data?.password ? data.password.toString() : "";
 
   if (validator.isEmpty(data.emailOrUserName)) {
-    errors.emailOrUserName = "Email or Username is required";
+    errors.emailOrUserName = "Either Email or Username is required";
   }
 
   if (validator.isEmpty(data.password)) {
